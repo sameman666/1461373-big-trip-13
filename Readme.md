@@ -1,7 +1,7 @@
 # Проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Андрей Пaтрaков](https://up.htmlacademy.ru/ecmascript/13/user/1461373).
-* Наставник: `Неизвестно`.
+* Наставник: [Алексей Балесный](https://htmlacademy.ru/profile/id221665).
 
 ---
 
