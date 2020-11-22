@@ -36,8 +36,6 @@ temporaryPoints = temporaryPoints.sort((a, b) => {
   return a.date.eventDate.format(`DD`) - b.date.eventDate.format(`DD`);
 });
 
-console.log(temporaryPoints);
-
 render(tripEventsList, createEditorFormTemplate(temporaryPoints[0]));
 
 for (let i = 1; i < AMOUNT_TO_RENDER; i++) {
