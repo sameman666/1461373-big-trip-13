@@ -1,5 +1,8 @@
-export const createNewEventFormTemplate = (point) => {
-  const {type, date: {eventDate, eventDuration}, price, destination, destinationInfo, offers} = point;
+import {createEventList} from "../mock/point.js";
+import {createCityList} from "../mock/point.js";
+
+export const createNewEventFormTemplate = (point, offers) => {
+  const {type, date: {eventDate, eventDuration}, price, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
@@ -13,56 +16,7 @@ export const createNewEventFormTemplate = (point) => {
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-
-          <div class="event__type-item">
-            <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-            <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-            <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-            <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-            <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-transport-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="transport">
-            <label class="event__type-label  event__type-label--transport" for="event-type-transport-1">Transport</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-            <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" checked="">
-            <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-            <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-            <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-            <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-          </div>
+          ${createEventList()}
         </fieldset>
       </div>
     </div>
@@ -73,9 +27,7 @@ export const createNewEventFormTemplate = (point) => {
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
       <datalist id="destination-list-1">
-        <option value="Amsterdam"></option>
-        <option value="Geneva"></option>
-        <option value="${destination}"></option>
+        ${createCityList()}
       </datalist>
     </div>
 
@@ -96,66 +48,14 @@ export const createNewEventFormTemplate = (point) => {
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Delete</button>
-    <button class="event__rollup-btn" type="button">
-      <span class="visually-hidden">Open event</span>
-    </button>
+    <button class="event__reset-btn" type="reset">Cancel</button>
   </header>
   <section class="event__details">
-    <section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-      <div class="event__available-offers">
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[0].name}-1" type="checkbox" name="event-offer-${offers[0].name}" checked="">
-          <label class="event__offer-label" for="event-offer-${offers[0].name}-1">
-            <span class="event__offer-title">Add ${offers[0].name}</span>
-            +€&nbsp;
-            <span class="event__offer-price">${offers[0].price}</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[1].name}-1" type="checkbox" name="event-offer-${offers[1].name}" checked="">
-          <label class="event__offer-label" for="event-offer-${offers[1].name}-1">
-            <span class="event__offer-title">Switch to ${offers[1].name} class</span>
-            +€&nbsp;
-            <span class="event__offer-price">${offers[1].price}</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[2].name}-1" type="checkbox" name="event-offer-${offers[2].name}">
-          <label class="event__offer-label" for="event-offer-${offers[2].name}-1">
-            <span class="event__offer-title">Add ${offers[2].name}</span>
-            +€&nbsp;
-            <span class="event__offer-price">${offers[2].price}</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[3].name}-1" type="checkbox" name="event-offer-${offers[3].name}">
-          <label class="event__offer-label" for="event-offer-${offers[3].name}-1">
-            <span class="event__offer-title">Choose ${offers[3].name}</span>
-            +€&nbsp;
-            <span class="event__offer-price">${offers[3].price}</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[4].name}-1" type="checkbox" name="event-offer-${offers[4].name}">
-          <label class="event__offer-label" for="event-offer-${offers[4].name}-1">
-            <span class="event__offer-title">Travel by ${offers[4].name}</span>
-            +€&nbsp;
-            <span class="event__offer-price">${offers[4].price}</span>
-          </label>
-        </div>
-      </div>
-    </section>
-
+    ${offers}
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
+      ${photo}
     </section>
   </section>
 </form>`;

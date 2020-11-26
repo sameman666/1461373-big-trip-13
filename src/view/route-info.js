@@ -1,8 +1,8 @@
 export const createRouteInfoAndPriceTemplate = (createdRoute) => {
-  const {firstPoint, middlePoint, lastPoint, startEventDate, endEventDate, totalPrice} = createdRoute;
+  const {startEventDate, endEventDate, totalPrice, route} = createdRoute;
   return `<section class="trip-main__trip-info  trip-info">
   <div class="trip-info__main">
-    <h1 class="trip-info__title">${firstPoint} — ${middlePoint} — ${lastPoint}</h1>
+    <h1 class="trip-info__title">${route}</h1>
 
     <p class="trip-info__dates">${startEventDate.format(`MMM DD`)}&nbsp;—&nbsp;${endEventDate.format(`DD`)}</p>
   </div>

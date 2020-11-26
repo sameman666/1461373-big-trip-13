@@ -8,11 +8,12 @@ import {createPoint} from "./mock/point.js";
 import {createRoute} from "./mock/route.js";
 import {createRouteInfoAndPriceTemplate} from "./view/route-info.js";
 
-const AMOUNT_TO_RENDER = 6;
+const AMOUNT_TO_RENDER = 22;
 const Place = {
   BEFORE_BEGIN: `beforebegin`,
   BEFORE_END: `beforeend`
 };
+
 const header = document.querySelector(`.page-header`);
 const tripMainControls = header.querySelector(`.trip-main__trip-controls`);
 const filterEventsHeading = tripMainControls.querySelector(`h2:last-child`);
@@ -30,10 +31,10 @@ render(tripEvents, createEventsListTemplate());
 
 const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
 
-let temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
+const temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
 
-temporaryPoints = temporaryPoints.sort((a, b) => {
-  return a.date.eventDate.format(`DD`) - b.date.eventDate.format(`DD`);
+temporaryPoints.sort((a, b) => {
+  return a.date.eventDate - b.date.eventDate;
 });
 
 render(tripEventsList, createEditorFormTemplate(temporaryPoints[0]));
@@ -42,6 +43,15 @@ for (let i = 1; i < AMOUNT_TO_RENDER; i++) {
   render(tripEventsList, createRoutePointTemplate(temporaryPoints[i]));
 }
 
-const createdRoute = createRoute(temporaryPoints);
+const countRenderedOffersSum = () => {
+  const allRenderedOffers = tripEvents.querySelectorAll(`.event__offer-price`);
+  let totalSum = 0;
+  allRenderedOffers.forEach((element) => {
+    totalSum = totalSum + element.textContent * 1;
+  });
+  return totalSum;
+};
+
+const createdRoute = createRoute(temporaryPoints, countRenderedOffersSum());
 
 render(tripMainControls, createRouteInfoAndPriceTemplate(createdRoute), Place.BEFORE_BEGIN);
