@@ -1,44 +1,61 @@
-import {createEventList} from "../mock/point.js";
-import {createCityList} from "../mock/point.js";
+import {createCityList, createEventList} from "../mock/point.js";
+
+export const generatePhotosMarkup = (photo) => {
+  const photosMarkups = [];
+  for (let i = 0; i < photo.length; i++) {
+    photosMarkups.push(`<img class="event__photo" src="${photo[i]}" alt="Event photo">`);
+  }
+  return `<div class="event__photos-container">
+  <div class="event__photos-tape">
+    ${photosMarkups.join(``)}
+  </div>
+</div>`;
+};
+
+export const generateEventListMarkup = (createdEventList) => {
+  const eventListMarkups = [];
+  for (let i = 0; i < createdEventList.length; i++) {
+    eventListMarkups.push(`<div class="event__type-item">
+      <input id="event-type-${createdEventList[i].toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${createdEventList[i].toLowerCase()}">
+      <label class="event__type-label  event__type-label--${createdEventList[i].toLowerCase()}" for="event-type-${createdEventList[i].toLowerCase()}-1">${createdEventList[i]}</label>
+    </div>`);
+  }
+  return eventListMarkups.join(``);
+};
+
+export const generateCityListMarkup = (createdCityList) => {
+  const cityListMarkups = [];
+  for (let i = 0; i < createdCityList.length; i++) {
+    cityListMarkups.push(`<option value="${createdCityList[i]}"></option>`);
+  }
+  return cityListMarkups.join(``);
+};
+
+export const generateOffersListMarkup = (offersToRender) => {
+  const offersListMarkups = [];
+  if (offersToRender.length) {
+    for (let i = 0; i < offersToRender.length; i++) {
+      offersListMarkups.push(`<div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offersToRender[i].name}-1" type="checkbox" name="event-offer-${offersToRender[i].name}" checked="">
+      <label class="event__offer-label" for="event-offer-${offersToRender[i].name}-1">
+        <span class="event__offer-title">${offersToRender[i].name}</span>
+        +€&nbsp;
+        <span class="event__offer-price">${offersToRender[i].price}</span>
+      </label>
+    </div>`);
+    }
+    return `<section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+    <div class="event__available-offers">
+      ${offersListMarkups.join(``)}
+    </div>
+  </section>`;
+  }
+  return offersListMarkups;
+};
 
 export const createEditorFormTemplate = (point) => {
-  const {type, date: {eventDate, eventDuration}, price, offers, destination, destinationInfo, photo} = point;
-
-  const getRandomInteger = (a = 0, b = 1) => {
-    const lower = Math.ceil(Math.min(a, b));
-    const upper = Math.floor(Math.max(a, b));
-
-    return Math.floor(lower + Math.random() * (upper - lower + 1));
-  };
-
-  const getRandomOffersForEditorForm = (offersToRender) => {
-    const RandomOffers = [];
-    const RANDOM_OFFERS_AMOUNT = getRandomInteger(1, offersToRender.length);
-    if (offersToRender) {
-      for (let i = 0; i < RANDOM_OFFERS_AMOUNT; i++) {
-        RandomOffers.push(`<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offersToRender[i].name}-1" type="checkbox" name="event-offer-${offersToRender[i].name}" checked="">
-        <label class="event__offer-label" for="event-offer-${offersToRender[i].name}-1">
-          <span class="event__offer-title">${offersToRender[i].name}</span>
-          +€&nbsp;
-          <span class="event__offer-price">${offersToRender[i].price}</span>
-        </label>
-      </div>`);
-      }
-    } else {
-      RandomOffers.push(``);
-    }
-    if (RandomOffers[0] !== ``) {
-      return `<section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-      <div class="event__available-offers">
-        ${RandomOffers.join(``)}
-      </div>
-    </section>`;
-    } else {
-      return ``;
-    }
-  };
+  const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
@@ -52,7 +69,7 @@ export const createEditorFormTemplate = (point) => {
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${createEventList()}
+          ${generateEventListMarkup(createEventList())}
         </fieldset>
       </div>
     </div>
@@ -63,7 +80,7 @@ export const createEditorFormTemplate = (point) => {
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
       <datalist id="destination-list-1">
-        ${createCityList()}
+        ${generateCityListMarkup(createCityList())}
       </datalist>
     </div>
 
@@ -90,11 +107,11 @@ export const createEditorFormTemplate = (point) => {
     </button>
   </header>
   <section class="event__details">
-      ${getRandomOffersForEditorForm(offers)}
+      ${generateOffersListMarkup(checkedOffers)}
      <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
-      ${photo}
+      ${generatePhotosMarkup(photo)}
     </section>
   </section>
 </form>`;

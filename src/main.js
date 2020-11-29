@@ -1,14 +1,14 @@
 import {createSiteMenuTemplate} from "./view/menu.js";
 import {createFiltersTemplate} from "./view/filters.js";
 import {createSortingTemplate} from "./view/sorting.js";
+import {createPoint} from "./mock/point.js";
 import {createRoutePointTemplate} from "./view/route-point.js";
 import {createEditorFormTemplate} from "./view/editor-form.js";
 import {createEventsListTemplate} from "./view/create-events-list.js";
-import {createPoint} from "./mock/point.js";
 import {createRoute} from "./mock/route.js";
 import {createRouteInfoAndPriceTemplate} from "./view/route-info.js";
 
-const AMOUNT_TO_RENDER = 22;
+const AMOUNT_TO_RENDER = 12;
 const Place = {
   BEFORE_BEGIN: `beforebegin`,
   BEFORE_END: `beforeend`
@@ -43,15 +43,6 @@ for (let i = 1; i < AMOUNT_TO_RENDER; i++) {
   render(tripEventsList, createRoutePointTemplate(temporaryPoints[i]));
 }
 
-const countRenderedOffersSum = () => {
-  const allRenderedOffers = tripEvents.querySelectorAll(`.event__offer-price`);
-  let totalSum = 0;
-  allRenderedOffers.forEach((element) => {
-    totalSum = totalSum + element.textContent * 1;
-  });
-  return totalSum;
-};
-
-const createdRoute = createRoute(temporaryPoints, countRenderedOffersSum());
+const createdRoute = createRoute(temporaryPoints);
 
 render(tripMainControls, createRouteInfoAndPriceTemplate(createdRoute), Place.BEFORE_BEGIN);

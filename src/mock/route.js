@@ -1,6 +1,16 @@
-export const createRoute = (data, offersSum) => {
+export const createRoute = (data) => {
 
-  let price = data.reduce((a, b) => a + b.price, 0) + offersSum;
+  const allRenderedOffers = document.querySelectorAll(`.event__offer-price`);
+
+  const countRenderedOffersSum = () => {
+    let totalSum = 0;
+    allRenderedOffers.forEach((element) => {
+      totalSum = totalSum + element.textContent * 1;
+    });
+    return totalSum;
+  };
+
+  const price = data.reduce((a, b) => a + b.price, 0) + countRenderedOffersSum();
   let routePoints = {};
 
   const getUniqueCitiesAmount = () => {
@@ -8,15 +18,9 @@ export const createRoute = (data, offersSum) => {
 
     data.forEach((element) => cities.push(element.destination));
 
-    const result = [];
+    const results = new Set(cities);
 
-    cities.forEach((element) => {
-      if (!result.includes(element)) {
-        result.push(element);
-      }
-    });
-
-    return result.length;
+    return results.size;
   };
 
   if (getUniqueCitiesAmount() === 0) {

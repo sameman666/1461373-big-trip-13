@@ -1,8 +1,8 @@
-import {createEventList} from "../mock/point.js";
-import {createCityList} from "../mock/point.js";
+import {generatePhotosMarkup, generateEventListMarkup, generateCityListMarkup, generateOffersListMarkup} from "../view/editor-form.js";
+import {createCityList, createEventList} from "../mock/point.js";
 
-export const createNewEventFormTemplate = (point, offers) => {
-  const {type, date: {eventDate, eventDuration}, price, destination, destinationInfo, photo} = point;
+export const createNewEventFormTemplate = (point) => {
+  const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
@@ -16,7 +16,7 @@ export const createNewEventFormTemplate = (point, offers) => {
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${createEventList()}
+          ${generateEventListMarkup(createEventList())}
         </fieldset>
       </div>
     </div>
@@ -27,7 +27,7 @@ export const createNewEventFormTemplate = (point, offers) => {
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
       <datalist id="destination-list-1">
-        ${createCityList()}
+        ${generateCityListMarkup(createCityList())}
       </datalist>
     </div>
 
@@ -51,11 +51,11 @@ export const createNewEventFormTemplate = (point, offers) => {
     <button class="event__reset-btn" type="reset">Cancel</button>
   </header>
   <section class="event__details">
-    ${offers}
+    ${generateOffersListMarkup(checkedOffers)}
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
-      ${photo}
+      ${generatePhotosMarkup(photo)}
     </section>
   </section>
 </form>`;
