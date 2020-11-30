@@ -1,13 +1,14 @@
-export const createRouteInfoAndPriceTemplate = () => {
+export const createRouteInfoAndPriceTemplate = (createdRoute) => {
+  const {startEventDate, endEventDate, totalPrice, route} = createdRoute;
   return `<section class="trip-main__trip-info  trip-info">
   <div class="trip-info__main">
-    <h1 class="trip-info__title">Amsterdam — Chamonix — Geneva</h1>
+    <h1 class="trip-info__title">${route}</h1>
 
-    <p class="trip-info__dates">Mar 18&nbsp;—&nbsp;20</p>
+    <p class="trip-info__dates">${startEventDate.format(`MMM DD`)}&nbsp;—&nbsp;${endEventDate.format(`DD`)}</p>
   </div>
 
   <p class="trip-info__cost">
-    Total: €&nbsp;<span class="trip-info__cost-value">1230</span>
+    Total: €&nbsp;<span class="trip-info__cost-value">${totalPrice}</span>
   </p>
 </section>`;
 };

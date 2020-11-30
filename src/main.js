@@ -1,36 +1,48 @@
-import {createRouteInfoAndPriceTemplate} from "./view/route-info.js";
 import {createSiteMenuTemplate} from "./view/menu.js";
 import {createFiltersTemplate} from "./view/filters.js";
 import {createSortingTemplate} from "./view/sorting.js";
-import {createEditorFormTemplate} from "./view/editor-form.js";
+import {createPoint} from "./mock/point.js";
 import {createRoutePointTemplate} from "./view/route-point.js";
-import {createCreateFormTemplate} from "./view/create-form.js";
+import {createEditorFormTemplate} from "./view/editor-form.js";
+import {createEventsListTemplate} from "./view/create-events-list.js";
+import {createRoute} from "./mock/route.js";
+import {createRouteInfoAndPriceTemplate} from "./view/route-info.js";
 
-const AMOUNT_TO_RENDER = 3;
+const AMOUNT_TO_RENDER = 12;
+const Place = {
+  BEFORE_BEGIN: `beforebegin`,
+  BEFORE_END: `beforeend`
+};
+
 const header = document.querySelector(`.page-header`);
 const tripMainControls = header.querySelector(`.trip-main__trip-controls`);
 const filterEventsHeading = tripMainControls.querySelector(`h2:last-child`);
 const main = document.querySelector(`main`);
 const tripEvents = main.querySelector(`.trip-events`);
 
-const render = (container, template, place) => {
+const render = (container, template, place = Place.BEFORE_END) => {
   container.insertAdjacentHTML(place, template);
 };
 
-render(tripMainControls, createRouteInfoAndPriceTemplate(), `beforebegin`);
-render(filterEventsHeading, createSiteMenuTemplate(), `beforebegin`);
-render(tripMainControls, createFiltersTemplate(), `beforeend`);
-render(tripEvents, createSortingTemplate(), `beforeend`);
+render(filterEventsHeading, createSiteMenuTemplate(), Place.BEFORE_BEGIN);
+render(tripMainControls, createFiltersTemplate());
+render(tripEvents, createSortingTemplate());
+render(tripEvents, createEventsListTemplate());
 
-const newElement = document.createElement(`ul`);
-newElement.className = `trip-events__list`;
-const tripEventsList = newElement;
-tripEvents.insertAdjacentElement(`beforeend`, tripEventsList);
+const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
 
-render(tripEventsList, createEditorFormTemplate(), `beforeend`);
+const temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
 
-for (let i = 0; i < AMOUNT_TO_RENDER; i++) {
-  render(tripEventsList, createRoutePointTemplate(), `beforeend`);
+temporaryPoints.sort((a, b) => {
+  return a.date.eventDate - b.date.eventDate;
+});
+
+render(tripEventsList, createEditorFormTemplate(temporaryPoints[0]));
+
+for (let i = 1; i < AMOUNT_TO_RENDER; i++) {
+  render(tripEventsList, createRoutePointTemplate(temporaryPoints[i]));
 }
 
-render(tripEventsList, createCreateFormTemplate(), `beforeend`);
+const createdRoute = createRoute(temporaryPoints);
+
+render(tripMainControls, createRouteInfoAndPriceTemplate(createdRoute), Place.BEFORE_BEGIN);
