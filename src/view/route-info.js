@@ -1,4 +1,6 @@
-export const createRouteInfoAndPriceTemplate = (createdRoute) => {
+import {createElement} from "../utils.js";
+
+const createRouteInfoAndPriceTemplate = (createdRoute) => {
   const {startEventDate, endEventDate, totalPrice, route} = createdRoute;
   return `<section class="trip-main__trip-info  trip-info">
   <div class="trip-info__main">
@@ -12,3 +14,27 @@ export const createRouteInfoAndPriceTemplate = (createdRoute) => {
   </p>
 </section>`;
 };
+
+export default class RouteInfoAndPrice {
+  constructor(createdRoute) {
+    this._createdRoute = createdRoute;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createRouteInfoAndPriceTemplate(this._createdRoute);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

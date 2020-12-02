@@ -1,7 +1,8 @@
 import {generatePhotosMarkup, generateEventListMarkup, generateCityListMarkup, generateOffersListMarkup} from "../view/editor-form.js";
 import {createCityList, createEventList} from "../mock/point.js";
+import {createElement} from "../utils.js";
 
-export const createNewEventFormTemplate = (point) => {
+const createNewEventFormTemplate = (point) => {
   const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
@@ -60,3 +61,27 @@ export const createNewEventFormTemplate = (point) => {
   </section>
 </form>`;
 };
+
+export default class CreateForm {
+  constructor(point) {
+    this._point = point;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createNewEventFormTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

@@ -1,8 +1,10 @@
+import {createElement} from "../utils.js";
+
 const MINUTES_IN_AN_HOUR = 60;
 const HOURS_IN_A_DAY = 24;
 const MINUTES_IN_A_DAY = MINUTES_IN_AN_HOUR * HOURS_IN_A_DAY;
 
-export const createRoutePointTemplate = (point) => {
+const createRoutePointTemplate = (point) => {
   const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, isFavourite} = point;
 
   const endEventDate = eventDate.add(eventDuration, `m`);
@@ -67,3 +69,27 @@ export const createRoutePointTemplate = (point) => {
   </div>
 </li>`;
 };
+
+export default class RoutePoint {
+  constructor(point) {
+    this._point = point;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createRoutePointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

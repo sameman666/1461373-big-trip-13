@@ -1,35 +1,27 @@
-import {createSiteMenuTemplate} from "./view/menu.js";
-import {createFiltersTemplate} from "./view/filters.js";
-import {createSortingTemplate} from "./view/sorting.js";
+import {renderElement, Place} from "./utils.js";
+import SiteMenuView from "./view/menu.js";
+import FiltersView from "./view/filters.js";
+import SortingView from "./view/sorting.js";
 import {createPoint} from "./mock/point.js";
-import {createRoutePointTemplate} from "./view/route-point.js";
-import {createEditorFormTemplate} from "./view/editor-form.js";
-import {createEventsListTemplate} from "./view/create-events-list.js";
+import RoutePointView from "./view/route-point.js";
+import NoPoints from "./view/no-points.js";
+import EditorFormView from "./view/editor-form.js";
+import EventsListView from "./view/create-events-list.js";
 import {createRoute} from "./mock/route.js";
-import {createRouteInfoAndPriceTemplate} from "./view/route-info.js";
+import RouteInfoAndPriceView from "./view/route-info.js";
 
 const AMOUNT_TO_RENDER = 12;
-const Place = {
-  BEFORE_BEGIN: `beforebegin`,
-  BEFORE_END: `beforeend`
-};
 
 const header = document.querySelector(`.page-header`);
+const tripMain = header.querySelector(`.trip-main`);
 const tripMainControls = header.querySelector(`.trip-main__trip-controls`);
-const filterEventsHeading = tripMainControls.querySelector(`h2:last-child`);
 const main = document.querySelector(`main`);
 const tripEvents = main.querySelector(`.trip-events`);
 
-const render = (container, template, place = Place.BEFORE_END) => {
-  container.insertAdjacentHTML(place, template);
-};
-
-render(filterEventsHeading, createSiteMenuTemplate(), Place.BEFORE_BEGIN);
-render(tripMainControls, createFiltersTemplate());
-render(tripEvents, createSortingTemplate());
-render(tripEvents, createEventsListTemplate());
-
-const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
+renderElement(tripMainControls, new SiteMenuView().getElement(), Place.AFTER_BEGIN);
+renderElement(tripMainControls, new FiltersView().getElement(), Place.BEFORE_END);
+renderElement(tripEvents, new SortingView().getElement(), Place.BEFORE_END);
+renderElement(tripEvents, new EventsListView().getElement(), Place.BEFORE_END);
 
 const temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
 
@@ -37,12 +29,50 @@ temporaryPoints.sort((a, b) => {
   return a.date.eventDate - b.date.eventDate;
 });
 
-render(tripEventsList, createEditorFormTemplate(temporaryPoints[0]));
+const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
 
-for (let i = 1; i < AMOUNT_TO_RENDER; i++) {
-  render(tripEventsList, createRoutePointTemplate(temporaryPoints[i]));
+const renderPoint = (eventsList, point) => {
+  const routePointComponent = new RoutePointView(point);
+  const routePointEditComponent = new EditorFormView(point);
+
+  const replaceRoutePointToEditor = () => {
+    eventsList.replaceChild(routePointEditComponent.getElement(), routePointComponent.getElement());
+  };
+
+  const replaceEditorToRoutePoint = () => {
+    eventsList.replaceChild(routePointComponent.getElement(), routePointEditComponent.getElement());
+  };
+
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceEditorToRoutePoint();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  routePointComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+    replaceRoutePointToEditor();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
+
+  routePointEditComponent.getElement().addEventListener(`submit`, (evt) => {
+    replaceEditorToRoutePoint();
+    evt.preventDefault();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
+  return renderElement(eventsList, routePointComponent.getElement(), Place.BEFORE_END);
+};
+
+if (!temporaryPoints.length) {
+  renderElement(tripEventsList, new NoPoints().getElement(), Place.BEFORE_END);
+}
+
+for (let i = 0; i < AMOUNT_TO_RENDER; i++) {
+  renderPoint(tripEventsList, temporaryPoints[i]);
 }
 
 const createdRoute = createRoute(temporaryPoints);
 
-render(tripMainControls, createRouteInfoAndPriceTemplate(createdRoute), Place.BEFORE_BEGIN);
+renderElement(tripMain, new RouteInfoAndPriceView(createdRoute).getElement(), Place.AFTER_BEGIN);
