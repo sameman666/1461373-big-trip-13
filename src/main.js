@@ -56,6 +56,11 @@ const renderPoint = (eventsList, point) => {
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
+  routePointEditComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+    replaceEditorToRoutePoint();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
   routePointEditComponent.getElement().addEventListener(`submit`, (evt) => {
     replaceEditorToRoutePoint();
     evt.preventDefault();
