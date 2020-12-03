@@ -147,7 +147,7 @@ export const createPoint = () => {
   const randomTypeIndex = getRandomInteger(0, types.length - 1);
 
   const createOffersforPoint = () => {
-    let availableOffers = types[randomTypeIndex].offers ? types[randomTypeIndex].offers : ``;
+    const availableOffers = types[randomTypeIndex].offers ? types[randomTypeIndex].offers : ``;
     return availableOffers;
   };
 
