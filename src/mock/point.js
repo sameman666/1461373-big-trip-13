@@ -124,18 +124,16 @@ export const types = [
 ];
 
 export const createEventList = () => {
-  const eventList = [];
-  for (let i = 0; i < types.length; i++) {
-    eventList.push(types[i].name);
-  }
+  const eventList = types.map((element) => {
+    return element.name;
+  });
   return eventList;
 };
 
 export const createCityList = () => {
-  const cityList = [];
-  for (let i = 0; i < DESTINATIONS.length; i++) {
-    cityList.push(DESTINATIONS[i].destination);
-  }
+  const cityList = DESTINATIONS.map((element) => {
+    return element.destination;
+  });
   return cityList;
 };
 
@@ -149,24 +147,21 @@ export const createPoint = () => {
   const randomTypeIndex = getRandomInteger(0, types.length - 1);
 
   const createOffersforPoint = () => {
-    let availableOffers = ``;
-    if (types[randomTypeIndex].offers) {
-      availableOffers = types[randomTypeIndex].offers;
-    }
+    let availableOffers = types[randomTypeIndex].offers ? types[randomTypeIndex].offers : ``;
     return availableOffers;
   };
 
   const availableOffers = createOffersforPoint();
 
   const getCheckedOffersforPoint = () => {
-    const RandomOffers = [];
+    const randomOffers = [];
     const randomOffersAmount = getRandomInteger(1, availableOffers.length);
     if (availableOffers) {
       for (let i = 0; i < randomOffersAmount; i++) {
-        RandomOffers.push({name: availableOffers[i].name, price: availableOffers[i].price});
+        randomOffers.push({name: availableOffers[i].name, price: availableOffers[i].price});
       }
     }
-    return RandomOffers;
+    return randomOffers;
   };
 
   const createdPoint = {

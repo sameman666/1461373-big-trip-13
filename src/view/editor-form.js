@@ -1,9 +1,10 @@
 import {createCityList, createEventList} from "../mock/point.js";
+import {createElement} from "../utils.js";
 
-export const generatePhotosMarkup = (photo) => {
+export const generatePhotosMarkup = (photos) => {
   const photosMarkups = [];
-  for (let i = 0; i < photo.length; i++) {
-    photosMarkups.push(`<img class="event__photo" src="${photo[i]}" alt="Event photo">`);
+  for (let i = 0; i < photos.length; i++) {
+    photosMarkups.push(`<img class="event__photo" src="${photos[i]}" alt="Event photo">`);
   }
   return `<div class="event__photos-container">
   <div class="event__photos-tape">
@@ -54,7 +55,7 @@ export const generateOffersListMarkup = (offersToRender) => {
   return offersListMarkups;
 };
 
-export const createEditorFormTemplate = (point) => {
+const createEditorFormTemplate = (point) => {
   const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
@@ -116,3 +117,27 @@ export const createEditorFormTemplate = (point) => {
   </section>
 </form>`;
 };
+
+export default class EditorForm {
+  constructor(point) {
+    this._point = point;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditorFormTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
