@@ -1,5 +1,5 @@
 import {createCityList, createEventList} from "../mock/point.js";
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 export const generatePhotosMarkup = (photos) => {
   const photosMarkups = [];
@@ -118,26 +118,34 @@ const createEditorFormTemplate = (point) => {
 </form>`;
 };
 
-export default class EditorForm {
+export default class EditorForm extends AbstractView {
   constructor(point) {
+    super();
     this._point = point;
-
-    this._element = null;
+    this._clickHandler = this._clickHandler.bind(this);
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
   }
 
   getTemplate() {
     return createEditorFormTemplate(this._point);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _clickHandler() {
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.click = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
   }
 }

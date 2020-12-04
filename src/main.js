@@ -1,4 +1,4 @@
-import {renderElement, Place} from "./utils.js";
+import {renderElement, Place} from "./utils/render.js";
 import SiteMenuView from "./view/menu.js";
 import FiltersView from "./view/filters.js";
 import SortingView from "./view/sorting.js";
@@ -18,10 +18,10 @@ const tripMainControls = header.querySelector(`.trip-main__trip-controls`);
 const main = document.querySelector(`main`);
 const tripEvents = main.querySelector(`.trip-events`);
 
-renderElement(tripMainControls, new SiteMenuView().getElement(), Place.AFTER_BEGIN);
-renderElement(tripMainControls, new FiltersView().getElement(), Place.BEFORE_END);
-renderElement(tripEvents, new SortingView().getElement(), Place.BEFORE_END);
-renderElement(tripEvents, new EventsListView().getElement(), Place.BEFORE_END);
+renderElement(tripMainControls, new SiteMenuView(), Place.AFTER_BEGIN);
+renderElement(tripMainControls, new FiltersView(), Place.BEFORE_END);
+renderElement(tripEvents, new SortingView(), Place.BEFORE_END);
+renderElement(tripEvents, new EventsListView(), Place.BEFORE_END);
 
 const temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
 
@@ -51,27 +51,26 @@ const renderPoint = (eventsList, point) => {
     }
   };
 
-  routePointComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  routePointComponent.setClickHandler(() => {
     replaceRoutePointToEditor();
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  routePointEditComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  routePointEditComponent.setEditClickHandler(() => {
     replaceEditorToRoutePoint();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  routePointEditComponent.getElement().addEventListener(`submit`, (evt) => {
+  routePointEditComponent.setFormSubmitHandler(() => {
     replaceEditorToRoutePoint();
-    evt.preventDefault();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  return renderElement(eventsList, routePointComponent.getElement(), Place.BEFORE_END);
+  return renderElement(eventsList, routePointComponent, Place.BEFORE_END);
 };
 
 if (!temporaryPoints.length) {
-  renderElement(tripEventsList, new NoPoints().getElement(), Place.BEFORE_END);
+  renderElement(tripEventsList, new NoPoints(), Place.BEFORE_END);
 }
 
 for (let i = 0; i < AMOUNT_TO_RENDER; i++) {
@@ -80,4 +79,4 @@ for (let i = 0; i < AMOUNT_TO_RENDER; i++) {
 
 const createdRoute = createRoute(temporaryPoints);
 
-renderElement(tripMain, new RouteInfoAndPriceView(createdRoute).getElement(), Place.AFTER_BEGIN);
+renderElement(tripMain, new RouteInfoAndPriceView(createdRoute), Place.AFTER_BEGIN);
