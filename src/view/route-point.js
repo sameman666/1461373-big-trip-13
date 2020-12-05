@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 const MINUTES_IN_AN_HOUR = 60;
 const HOURS_IN_A_DAY = 24;
@@ -70,26 +70,23 @@ const createRoutePointTemplate = (point) => {
 </li>`;
 };
 
-export default class RoutePoint {
+export default class RoutePoint extends AbstractView {
   constructor(point) {
+    super();
     this._point = point;
-
-    this._element = null;
+    this._clickHandler = this._clickHandler.bind(this);
   }
 
   getTemplate() {
     return createRoutePointTemplate(this._point);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _clickHandler() {
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setClickHandler(callback) {
+    this._callback.click = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 }

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {getRandomInteger} from "../utils.js";
+import {getRandomInteger} from "../utils/common.js";
 
 const DAYS_AMOUNT = 7;
 const DECRIPTION_SENTENCES_AMOUNT = 5;

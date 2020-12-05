@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 const createRouteInfoAndPriceTemplate = (createdRoute) => {
   const {startEventDate, endEventDate, totalPrice, route} = createdRoute;
@@ -15,26 +15,13 @@ const createRouteInfoAndPriceTemplate = (createdRoute) => {
 </section>`;
 };
 
-export default class RouteInfoAndPrice {
+export default class RouteInfoAndPrice extends AbstractView {
   constructor(createdRoute) {
+    super();
     this._createdRoute = createdRoute;
-
-    this._element = null;
   }
 
   getTemplate() {
     return createRouteInfoAndPriceTemplate(this._createdRoute);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
