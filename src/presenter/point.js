@@ -75,6 +75,7 @@ export default class PointPresenter {
   _replaceEditorToRoutePoint() {
     this._container.replaceChild(this._routePointComponent.getElement(), this._routePointEditComponent.getElement());
     this._mode = Mode.DEFAULT;
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
   _escKeyDownHandler(evt) {
