@@ -8,13 +8,16 @@ import {renderElement, Place} from "../utils/render.js";
 import {createRoute} from "../mock/route.js";
 import PointPresenter from "../presenter/point.js";
 import {updateItem} from "../utils/common.js";
+import {sortByPrice, sortByTime} from "../utils/point.js";
+import {SortType} from "../const.js";
 
 export default class TripPresenter {
   constructor(container, points) {
-    this._AMOUNT_TO_RENDER = points.length;
+    this._amountToRender = points.length;
     this._container = container;
     this._points = points;
     this._pointPresenter = {};
+    this._currentSortType = SortType.DEFAULT;
 
     this._siteMenu = new SiteMenuView();
     this._filters = new FiltersView();
@@ -31,9 +34,11 @@ export default class TripPresenter {
 
     this._handlePointChange = this._handlePointChange.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
+    this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
   }
 
   init() {
+    this._sourcedPoints = this._points.slice();
     this._renderMenu();
     this._renderFilters();
     this._renderSorting();
@@ -41,12 +46,6 @@ export default class TripPresenter {
     this._renderPoints();
     this._renderNoPoints();
     this._renderRouteInfoAndPrice();
-  }
-
-  _handleModeChange() {
-    Object
-      .values(this._pointPresenter)
-      .forEach((presenter) => presenter.resetView());
   }
 
   _renderMenu() {
@@ -57,13 +56,9 @@ export default class TripPresenter {
     renderElement(this._tripMainControls, new FiltersView(), Place.BEFORE_END);
   }
 
-  _handlePointChange(updatedPoint) {
-    this._points = updateItem(this._points, updatedPoint);
-    this._pointPresenter[updatedPoint.id].init(updatedPoint);
-  }
-
   _renderSorting() {
     renderElement(this._tripEvents, new SortingView(), Place.BEFORE_END);
+    this._sorting.setSortTypeChangeHandler(this._handleSortTypeChange);
   }
 
   _renderEventsList() {
@@ -72,11 +67,11 @@ export default class TripPresenter {
   }
 
   _renderPoints() {
-    for (let i = 0; i < this._AMOUNT_TO_RENDER; i++) {
+    this._points.forEach((point) => {
       const pointPresenter = new PointPresenter(this.tripEventsList, this._handlePointChange, this._handleModeChange);
-      pointPresenter.init(this._points[i]);
-      this._pointPresenter[this._points[i].id] = pointPresenter;
-    }
+      pointPresenter.init(point);
+      this._pointPresenter[point.id] = pointPresenter;
+    });
   }
 
   _renderNoPoints() {
@@ -90,5 +85,48 @@ export default class TripPresenter {
       const createdRoute = createRoute(this._points);
       renderElement(this._tripMain, new RouteInfoAndPriceView(createdRoute), Place.AFTER_BEGIN);
     }
+  }
+
+  _handleModeChange() {
+    Object
+      .values(this._pointPresenter)
+      .forEach((presenter) => presenter.resetView());
+  }
+
+  _sortPoints(sortType) {
+    switch (sortType) {
+      case SortType.PRICE:
+        this._points.sort(sortByPrice);
+        break;
+      case SortType.TIME:
+        this._points.sort(sortByTime);
+        break;
+      default:
+        this._points = this._sourcedPoints.slice();
+    }
+
+    this._currentSortType = sortType;
+  }
+
+  _handleSortTypeChange(sortType) {
+    if (this._currentSortType === sortType) {
+      return;
+    }
+
+    this._sortPoints(sortType);
+    this._clearPointsList();
+    this._renderPoints();
+  }
+
+  _clearPointsList() {
+    Object
+      .values(this._pointPresenter)
+      .forEach((presenter) => presenter.destroy());
+    this._pointPresenter = {};
+  }
+
+  _handlePointChange(updatedPoint) {
+    this._points = updateItem(this._points, updatedPoint);
+    this._pointPresenter[updatedPoint.id].init(updatedPoint);
   }
 }
