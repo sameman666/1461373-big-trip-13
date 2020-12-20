@@ -17,7 +17,6 @@ export default class TripPresenter {
     this._container = container;
     this._points = points;
     this._pointPresenter = {};
-    this._currentSortType = SortType.DEFAULT;
 
     this._siteMenu = new SiteMenuView();
     this._filters = new FiltersView();
