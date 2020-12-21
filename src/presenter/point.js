@@ -81,6 +81,7 @@ export default class PointPresenter {
   _escKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
+      this._routePointEditComponent.reset(this._point);
       this._replaceEditorToRoutePoint();
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
     }
@@ -92,6 +93,7 @@ export default class PointPresenter {
   }
 
   _handleEditClick() {
+    this._routePointEditComponent.reset(this._point);
     this._replaceEditorToRoutePoint();
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }

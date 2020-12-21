@@ -1,5 +1,6 @@
-import {createCityList, createEventList} from "../mock/point.js";
-import AbstractView from "./abstract.js";
+import {createCityList, createEventList, types, DESTINATIONS} from "../mock/point.js";
+import SmartView from "./smart.js";
+
 
 export const generatePhotosMarkup = (photos) => {
   const photosMarkups = [];
@@ -118,16 +119,28 @@ const createEditorFormTemplate = (point) => {
 </form>`;
 };
 
-export default class EditorForm extends AbstractView {
+export default class EditorForm extends SmartView {
   constructor(point) {
     super();
-    this._point = point;
+    this._data = point;
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+
+    this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
+    this._destinationInputHandler = this._destinationInputHandler.bind(this);
+
+    this._setInnerHandlers();
+
+  }
+
+  reset(point) {
+    this.updateData(
+        point
+    );
   }
 
   getTemplate() {
-    return createEditorFormTemplate(this._point);
+    return createEditorFormTemplate(this._data);
   }
 
   _clickHandler() {
@@ -139,9 +152,57 @@ export default class EditorForm extends AbstractView {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 
+  _setInnerHandlers() {
+    this.getElement()
+    .querySelector(`.event__type-list`)
+    .addEventListener(`click`, this._eventTypeToggleHandler);
+    this.getElement()
+    .querySelector(`.event__input--destination`)
+    .addEventListener(`input`, this._destinationInputHandler);
+  }
+
+  _eventTypeToggleHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      type: evt.target.textContent
+    });
+    types.forEach((type) => {
+      if (type.name === this._data.type) {
+        if (type.offers) {
+          this.updateData({
+            checkedOffers: type.offers
+          });
+        } else {
+          this.updateData({
+            checkedOffers: ``
+          });
+        }
+      }
+    });
+  }
+
+  _destinationInputHandler(evt) {
+    evt.preventDefault();
+    DESTINATIONS.forEach((destination) => {
+      if (evt.target.value === destination.destination) {
+        this.updateData({
+          destination: destination.destination,
+          destinationInfo: destination.destinationInfo,
+          photo: destination.destinationPhoto
+        });
+      }
+    });
+  }
+
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setEditClickHandler(this._callback.click);
+  }
+
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._point);
+    this._callback.formSubmit(this._data);
   }
 
   setFormSubmitHandler(callback) {
