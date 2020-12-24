@@ -3,8 +3,6 @@ import {getRandomInteger} from "../utils/common.js";
 
 const DAYS_AMOUNT = 7;
 const DECRIPTION_SENTENCES_AMOUNT = 5;
-const MIN_EVENT_DURATION_MINUTES = 20;
-const MAX_EVENT_DURATION_MINUTES = 40;
 const MIN_EVENT_PRICE = 20;
 const MAX_EVENT_PRICE = 100;
 const DESCRIPTION = [`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`];
@@ -140,12 +138,18 @@ export const createCityList = () => {
   return cityList;
 };
 
-const generateRandomDate = () => {
-  const randomIndex = getRandomInteger(1, DAYS_AMOUNT);
-  return dayjs().add(randomIndex, `day`);
+
+const generateRandomDate = (randomDateIndex, date) => {
+  let randomDate = dayjs().add(randomDateIndex, `day`);
+  if (date === `eventDate`) {
+    return randomDate;
+  }
+  randomDate = randomDate.add(randomDateIndex, `day`);
+  return randomDate;
 };
 
 export const createPoint = () => {
+  const randomDateIndex = getRandomInteger(1, DAYS_AMOUNT);
   const randomDestinationIndex = getRandomInteger(0, DESTINATIONS.length - 1);
   const randomTypeIndex = getRandomInteger(0, types.length - 1);
 
@@ -167,14 +171,17 @@ export const createPoint = () => {
     return randomOffers;
   };
 
+  const eventDate = generateRandomDate(randomDateIndex, `eventDate`);
+  const endEventDate = generateRandomDate(randomDateIndex);
+  const eventDuration = endEventDate.diff(eventDate);
+
   const createdPoint = {
     id: generateId(),
     type: types[randomTypeIndex].name,
     destination: DESTINATIONS[randomDestinationIndex].destination,
-    date: {
-      eventDate: generateRandomDate(),
-      eventDuration: getRandomInteger(MIN_EVENT_DURATION_MINUTES, MAX_EVENT_DURATION_MINUTES)
-    },
+    eventDate,
+    endEventDate,
+    eventDuration,
     checkedOffers: getCheckedOffersforPoint(),
     price: getRandomInteger(MIN_EVENT_PRICE, MAX_EVENT_PRICE),
     isFavourite: Boolean(getRandomInteger()),

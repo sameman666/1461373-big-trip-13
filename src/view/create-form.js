@@ -3,7 +3,7 @@ import {createCityList, createEventList} from "../mock/point.js";
 import AbstractView from "./abstract.js";
 
 const createNewEventFormTemplate = (point) => {
-  const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
+  const {type, eventDate, eventDuration, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
