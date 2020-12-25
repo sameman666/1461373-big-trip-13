@@ -1,5 +1,9 @@
 import {createCityList, createEventList, types, DESTINATIONS} from "../mock/point.js";
 import SmartView from "./smart.js";
+import flatpickr from "flatpickr";
+import dayjs from "dayjs";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 
 export const generatePhotosMarkup = (photos) => {
@@ -57,7 +61,7 @@ export const generateOffersListMarkup = (offersToRender) => {
 };
 
 const createEditorFormTemplate = (point) => {
-  const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, destinationInfo, photo} = point;
+  const {type, eventDate, endEventDate, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
@@ -91,7 +95,7 @@ const createEditorFormTemplate = (point) => {
       <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventDate.format(`DD/MM/YY HH:mm`)}">
       —
       <label class="visually-hidden" for="event-end-time-1">To</label>
-      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${eventDate.add(eventDuration, `m`).format(`DD/MM/YY HH:mm`)}">
+      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endEventDate.format(`DD/MM/YY HH:mm`)}">
     </div>
 
     <div class="event__field-group  event__field-group--price">
@@ -123,12 +127,17 @@ export default class EditorForm extends SmartView {
   constructor(point) {
     super();
     this._data = point;
+    this._startDatepicker = null;
+    this._endDatepicker = null;
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
 
+    this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
+    this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
     this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
 
+    this._setDatepicker();
     this._setInnerHandlers();
 
   }
@@ -152,6 +161,58 @@ export default class EditorForm extends SmartView {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 
+  _setDatepicker() {
+    if (this._startDatepicker) {
+      this._startDatepicker.destroy();
+      this._startdatepicker = null;
+    }
+
+    if (this._endDatepicker) {
+      this._endDatepicker.destroy();
+      this._endDatepicker = null;
+    }
+
+    this._startDatepicker = flatpickr(
+        this.getElement().querySelector(`#event-start-time-1`),
+        {
+          enableTime: true,
+          minDate: `today`,
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._data.eventDate.toDate(),
+          onChange: this._startDateChangeHandler
+        }
+    );
+
+    this._endDatepicker = flatpickr(
+        this.getElement().querySelector(`#event-end-time-1`),
+        {
+          enableTime: true,
+          minDate: this._data.eventDate.toDate(),
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._data.endEventDate.toDate(),
+          onChange: this._endDateChangeHandler
+        }
+    );
+  }
+
+  _startDateChangeHandler(userDate) {
+    this.updateData({
+      eventDate: dayjs(userDate),
+    });
+    this.updateData({
+      eventDuration: this._data.endEventDate.diff(this._data.eventDate)
+    });
+  }
+
+  _endDateChangeHandler([userDate]) {
+    this.updateData({
+      endEventDate: dayjs(userDate)
+    });
+    this.updateData({
+      eventDuration: this._data.endEventDate.diff(this._data.eventDate)
+    });
+  }
+
   _setInnerHandlers() {
     this.getElement()
     .querySelector(`.event__type-list`)
@@ -166,35 +227,26 @@ export default class EditorForm extends SmartView {
     this.updateData({
       type: evt.target.textContent
     });
-    types.forEach((type) => {
-      if (type.name === this._data.type) {
-        if (type.offers) {
-          this.updateData({
-            checkedOffers: type.offers
-          });
-        } else {
-          this.updateData({
-            checkedOffers: ``
-          });
-        }
-      }
+    let foundType = types.find((type) => type.name === this._data.type);
+    this.updateData({
+      checkedOffers: foundType.offers ? foundType.offers : ``
     });
   }
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
-    DESTINATIONS.forEach((destination) => {
-      if (evt.target.value === destination.destination) {
-        this.updateData({
-          destination: destination.destination,
-          destinationInfo: destination.destinationInfo,
-          photo: destination.destinationPhoto
-        });
-      }
-    });
+    let foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
+    if (foundDestination) {
+      this.updateData({
+        destination: foundDestination.destination,
+        destinationInfo: foundDestination.destinationInfo,
+        photo: foundDestination.destinationPhoto
+      });
+    }
   }
 
   restoreHandlers() {
+    this._setDatepicker();
     this._setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setEditClickHandler(this._callback.click);

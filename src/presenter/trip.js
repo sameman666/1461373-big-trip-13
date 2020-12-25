@@ -8,7 +8,7 @@ import {renderElement, Place} from "../utils/render.js";
 import {createRoute} from "../mock/route.js";
 import PointPresenter from "../presenter/point.js";
 import {updateItem} from "../utils/common.js";
-import {sortByPrice, sortByTime} from "../utils/point.js";
+import {sortByPrice, sortByTime, sortByDay} from "../utils/point.js";
 import {SortType} from "../const.js";
 
 export default class TripPresenter {
@@ -101,7 +101,7 @@ export default class TripPresenter {
         this._points.sort(sortByTime);
         break;
       default:
-        this._points = this._sourcedPoints.slice();
+        this._points.sort(sortByDay);
     }
 
     this._currentSortType = sortType;

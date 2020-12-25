@@ -3,5 +3,9 @@ export const sortByPrice = (pointA, pointB) => {
 };
 
 export const sortByTime = (pointA, pointB) => {
-  return pointB.date.eventDuration - pointA.date.eventDuration;
+  return pointB.eventDuration - pointA.eventDuration;
+};
+
+export const sortByDay = (pointA, pointB) => {
+  return pointA.eventDate - pointB.eventDate;
 };

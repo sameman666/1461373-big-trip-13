@@ -5,9 +5,8 @@ const HOURS_IN_A_DAY = 24;
 const MINUTES_IN_A_DAY = MINUTES_IN_AN_HOUR * HOURS_IN_A_DAY;
 
 const createRoutePointTemplate = (point) => {
-  const {type, date: {eventDate, eventDuration}, price, checkedOffers, destination, isFavourite} = point;
+  const {type, eventDate, endEventDate, price, checkedOffers, destination, isFavourite} = point;
 
-  const endEventDate = eventDate.add(eventDuration, `m`);
   const timeDifferenceInDays = endEventDate.diff(eventDate, `day`);
   const timeDifferenceInHours = endEventDate.diff(eventDate, `hour`);
   const timeDifferenceInMinutes = endEventDate.diff(eventDate, `minute`);

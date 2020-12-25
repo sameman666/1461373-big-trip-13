@@ -7,7 +7,7 @@ const body = document.querySelector(`body`);
 
 const temporaryPoints = new Array(AMOUNT_TO_RENDER).fill().map(createPoint);
 temporaryPoints.sort((a, b) => {
-  return a.date.eventDate - b.date.eventDate;
+  return a.eventDate - b.eventDate;
 });
 
 const tripPresenter = new TripPresenter(body, temporaryPoints);

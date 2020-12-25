@@ -33,29 +33,29 @@ export const createRoute = (data) => {
   } else if (getUniqueCitiesAmount() === 1) {
     routePoints = {
       route: data[0].destination,
-      startEventDate: data[0].date.eventDate,
-      endEventDate: data[0].date.eventDate.add(data[0].date.eventDuration, `m`),
+      startEventDate: data[0].eventDate,
+      endEventDate: data[0].eventDate.add(data[0].eventDuration, `m`),
       totalPrice: price
     };
   } else if (getUniqueCitiesAmount() === 2) {
     routePoints = {
       route: `${data[0].destination} - ${data[data.length - 1].destination}`,
-      startEventDate: data[0].date.eventDate,
-      endEventDate: data[1].date.eventDate.add(data[1].date.eventDuration, `m`),
+      startEventDate: data[0].eventDate,
+      endEventDate: data[1].eventDate.add(data[1].eventDuration, `m`),
       totalPrice: price
     };
   } else if (getUniqueCitiesAmount() === 3) {
     routePoints = {
       route: `${data[0].destination} - ${data[1].destination} - ${data[2].destination}`,
-      startEventDate: data[0].date.eventDate,
-      endEventDate: data[2].date.eventDate.add(data[2].date.eventDuration, `m`),
+      startEventDate: data[0].eventDate,
+      endEventDate: data[2].eventDate.add(data[2].eventDuration, `m`),
       totalPrice: price
     };
   } else if (getUniqueCitiesAmount() > 3) {
     routePoints = {
       route: `${data[0].destination} - ... - ${data[data.length - 1].destination}`,
-      startEventDate: data[0].date.eventDate,
-      endEventDate: data[data.length - 1].date.eventDate.add(data[data.length - 1].date.eventDuration, `m`),
+      startEventDate: data[0].eventDate,
+      endEventDate: data[data.length - 1].eventDate.add(data[data.length - 1].eventDuration, `m`),
       totalPrice: price
     };
   }
