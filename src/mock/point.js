@@ -8,7 +8,7 @@ const MAX_EVENT_PRICE = 100;
 const DESCRIPTION = [`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`];
 
 
-const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+export const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
 
 const getRandomDestinationInfo = () => {
   const randomAmountOfSentences = getRandomInteger(1, DECRIPTION_SENTENCES_AMOUNT);
@@ -144,12 +144,16 @@ const generateRandomDate = (randomDateIndex, date) => {
   if (date === `eventDate`) {
     return randomDate;
   }
+  if (randomDateIndex < 0) {
+    randomDateIndex = -randomDateIndex;
+  }
   randomDate = randomDate.add(randomDateIndex, `day`);
   return randomDate;
 };
 
 export const createPoint = () => {
-  const randomDateIndex = getRandomInteger(1, DAYS_AMOUNT);
+  const isEventDate = `eventDate`;
+  const randomDateIndex = getRandomInteger(-DAYS_AMOUNT, DAYS_AMOUNT);
   const randomDestinationIndex = getRandomInteger(0, DESTINATIONS.length - 1);
   const randomTypeIndex = getRandomInteger(0, types.length - 1);
 
@@ -171,7 +175,7 @@ export const createPoint = () => {
     return randomOffers;
   };
 
-  const eventDate = generateRandomDate(randomDateIndex, `eventDate`);
+  const eventDate = generateRandomDate(randomDateIndex, isEventDate);
   const endEventDate = generateRandomDate(randomDateIndex);
   const eventDuration = endEventDate.diff(eventDate);
 

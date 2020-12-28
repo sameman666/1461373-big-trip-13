@@ -37,7 +37,7 @@ export const generateCityListMarkup = (createdCityList) => {
   return cityListMarkups.join(``);
 };
 
-export const generateOffersListMarkup = (offersToRender) => {
+export const generateOffersListMarkup = (offersToRender) => { //2 параметра, checkedOffers и types от type (см availavleOffers)
   const offersListMarkups = [];
   if (offersToRender.length) {
     for (let i = 0; i < offersToRender.length; i++) {
@@ -57,7 +57,7 @@ export const generateOffersListMarkup = (offersToRender) => {
     </div>
   </section>`;
   }
-  return offersListMarkups;
+  return ``;
 };
 
 const createEditorFormTemplate = (point) => {
@@ -103,7 +103,7 @@ const createEditorFormTemplate = (point) => {
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -131,15 +131,28 @@ export default class EditorForm extends SmartView {
     this._endDatepicker = null;
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
     this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
+    this._priceInputHandler = this._priceInputHandler.bind(this);
 
     this._setDatepicker();
     this._setInnerHandlers();
 
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._startDatepicker || this._endDatepicker) {
+      this._startDatepicker.destroy();
+      this._endDatepicker.destroy();
+      this._startDatepicker = null;
+      this._endDatepicker = null;
+    }
   }
 
   reset(point) {
@@ -220,6 +233,9 @@ export default class EditorForm extends SmartView {
     this.getElement()
     .querySelector(`.event__input--destination`)
     .addEventListener(`input`, this._destinationInputHandler);
+    this.getElement()
+    .querySelector(`.event__input--price`)
+    .addEventListener(`input`, this._priceInputHandler);
   }
 
   _eventTypeToggleHandler(evt) {
@@ -227,7 +243,7 @@ export default class EditorForm extends SmartView {
     this.updateData({
       type: evt.target.textContent
     });
-    let foundType = types.find((type) => type.name === this._data.type);
+    const foundType = types.find((type) => type.name === this._data.type);
     this.updateData({
       checkedOffers: foundType.offers ? foundType.offers : ``
     });
@@ -235,7 +251,7 @@ export default class EditorForm extends SmartView {
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
-    let foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
+    const foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
     if (foundDestination) {
       this.updateData({
         destination: foundDestination.destination,
@@ -245,10 +261,18 @@ export default class EditorForm extends SmartView {
     }
   }
 
+  _priceInputHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      price: evt.target.value
+    });
+  }
+
   restoreHandlers() {
     this._setDatepicker();
     this._setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
     this.setEditClickHandler(this._callback.click);
   }
 
@@ -260,5 +284,15 @@ export default class EditorForm extends SmartView {
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(this._data);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 }
