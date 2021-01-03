@@ -9,7 +9,6 @@ import {createRoute} from "../mock/route.js";
 import PointPresenter from "../presenter/point.js";
 import PointNewPresenter from "../presenter/pointNewPresenter.js";
 import {filter} from "../utils/filters.js";
-// import {updateItem} from "../utils/common.js";
 import {sortByPrice, sortByTime, sortByDay} from "../utils/point.js";
 import {SortType, UserAction, UpdateType, FilterType} from "../const.js";
 
@@ -27,7 +26,6 @@ export default class TripPresenter {
 
     this._siteMenu = new SiteMenuView();
     this._filters = new FiltersView();
-    // this._sorting = new SortingView();
     this._eventsList = new EventsListView();
     this._noPoints = new NoPoints();
     this._routeInfoAndPrice = new RouteInfoAndPriceView();
@@ -38,7 +36,6 @@ export default class TripPresenter {
     this._main = container.querySelector(`main`);
     this._tripEvents = this._main.querySelector(`.trip-events`);
 
-    // this._handlePointChange = this._handlePointChange.bind(this);
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
 
@@ -50,14 +47,10 @@ export default class TripPresenter {
   }
 
   init() {
-    // this._sourcedPoints = this._points.slice();
     this._renderMenu();
-    // this._renderFilters();
-    // this._renderSorting();
     this._renderEventsList();
     this._createPointNewPresenter();
     this._renderPoints();
-    // this._renderNoPoints();
     this._renderRouteInfoAndPrice();
   }
 
@@ -65,16 +58,12 @@ export default class TripPresenter {
     render(this._tripMainControls, new SiteMenuView(), Place.AFTER_BEGIN);
   }
 
-  // _renderFilters() {
-  //   render(this._tripMainControls, new FiltersView(), Place.BEFORE_END);
-  // }
-
   _renderSorting() {
     if (this._sorting !== null) {
       this._sorting = null;
     }
 
-    this._sorting = new SortingView();
+    this._sorting = new SortingView(this._currentSortType);
 
     render(this._tripEvents, this._sorting, Place.AFTER_BEGIN);
     this._sorting.setSortTypeChangeHandler(this._handleSortTypeChange);
@@ -88,14 +77,6 @@ export default class TripPresenter {
   _createPointNewPresenter() {
     this._pointNewPresenter = new PointNewPresenter(this._tripEventsList, this._handleViewAction);
   }
-
-  // _renderPoints() {
-  //   this._points.forEach((point) => {
-  //     const pointPresenter = new PointPresenter(this.tripEventsList, this._handlePointChange, this._handleModeChange);
-  //     pointPresenter.init(point);
-  //     this._pointPresenter[point.id] = pointPresenter;
-  //   });
-  // }
 
   _renderPoints() {
     const points = this._getPoints();
@@ -112,12 +93,6 @@ export default class TripPresenter {
       this._pointPresenter[point.id] = pointPresenter;
     });
   }
-
-  // _renderNoPoints() {
-  //   if (!this._points.length) {
-  //     render(this._tripEventsList, new NoPoints(), Place.BEFORE_END);
-  //   }
-  // }
 
   _renderRouteInfoAndPrice() {
     if (this._points.length) {
@@ -140,18 +115,12 @@ export default class TripPresenter {
 
     switch (this._currentSortType) {
       case SortType.PRICE:
-        // return this._pointsModel.getPoints().sort(sortByPrice);
         return filtredPoints.sort(sortByPrice);
-        // break;
       case SortType.TIME:
-        // return this._pointsModel.getPoints().sort(sortByTime);
         return filtredPoints.sort(sortByTime);
-        // break;
       case SortType.DEFAULT:
-        // return this._pointsModel.getPoints().sort(sortByDay);
         return filtredPoints.sort(sortByDay);
     }
-    // return this._pointsModel.getPoints();
     return filtredPoints;
   }
 
@@ -162,29 +131,14 @@ export default class TripPresenter {
       .forEach((presenter) => presenter.resetView());
   }
 
-  // _sortPoints(sortType) {
-  //   switch (sortType) {
-  //     case SortType.PRICE:
-  //       this._points.sort(sortByPrice);
-  //       break;
-  //     case SortType.TIME:
-  //       this._points.sort(sortByTime);
-  //       break;
-  //     case SortType.DEFAULT:
-  //       this._points.sort(sortByDay);
-  //   }
-
-  //   this._currentSortType = sortType;
-  // }
-
   _handleSortTypeChange(sortType) {
     if (this._currentSortType === sortType) {
       return;
     }
 
-    // this._sortPoints(sortType);
     this._currentSortType = sortType;
     this._clearTrip();
+    this._currentSortType = sortType;
     this._renderPoints();
   }
 
@@ -201,12 +155,6 @@ export default class TripPresenter {
       this._currentSortType = SortType.DEFAULT;
     }
   }
-
-  // _handlePointChange(updatedPoint) {
-  //   this._points = updateItem(this._points, updatedPoint);
-  //   this._pointPresenter[updatedPoint.id].init(updatedPoint);
-  // }
-
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:

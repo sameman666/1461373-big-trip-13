@@ -54,7 +54,7 @@ const createNewEventFormTemplate = (point) => {
     <button class="event__reset-btn" type="reset">Cancel</button>
   </header>
   <section class="event__details">
-    ${generateOffersListMarkup(checkedOffers)}
+    ${generateOffersListMarkup(checkedOffers, type)}
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -78,6 +78,7 @@ export default class CreateForm extends SmartView {
     this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._priceInputHandler = this._priceInputHandler.bind(this);
+    this._offersCheckboxHandler = this._offersCheckboxHandler.bind(this);
 
     this._setDatepicker();
     this._setInnerHandlers();
@@ -166,6 +167,8 @@ export default class CreateForm extends SmartView {
     this.getElement()
     .querySelector(`.event__input--price`)
     .addEventListener(`input`, this._priceInputHandler);
+    this.getElement()
+    .addEventListener(`change`, this._offersCheckboxHandler);
   }
 
   _eventTypeToggleHandler(evt) {
@@ -188,6 +191,8 @@ export default class CreateForm extends SmartView {
         destinationInfo: foundDestination.destinationInfo,
         photo: foundDestination.destinationPhoto
       });
+    } else {
+      evt.target.setCustomValidity(`Выберите из списка возможных городов`);
     }
   }
 
@@ -196,6 +201,26 @@ export default class CreateForm extends SmartView {
     this.updateData({
       price: evt.target.value
     });
+  }
+
+  _offersCheckboxHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.parentElement.className === `event__offer-selector`) {
+      const offerElement = evt.target.parentElement;
+      const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
+      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
+      if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
+        this._data.checkedOffers.push(
+            {
+              name: offerName,
+              price: offerPrice
+            }
+        );
+      } else {
+        const offerIndex = this._data.checkedOffers.findIndex((offer) => offer.name === offerName);
+        this._data.checkedOffers.splice(offerIndex, 1);
+      }
+    }
   }
 
   restoreHandlers() {

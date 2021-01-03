@@ -37,18 +37,35 @@ export const generateCityListMarkup = (createdCityList) => {
   return cityListMarkups.join(``);
 };
 
-export const generateOffersListMarkup = (offersToRender) => { //2 параметра, checkedOffers и types от type (см availavleOffers)
+export const generateOffersListMarkup = (checkedOffers, currentType) => {
+  const foundType = types.find((type) => type.name === currentType);
   const offersListMarkups = [];
-  if (offersToRender.length) {
-    for (let i = 0; i < offersToRender.length; i++) {
+  if (checkedOffers.length) {
+    for (let i = 0; i < checkedOffers.length; i++) {
       offersListMarkups.push(`<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offersToRender[i].name}-1" type="checkbox" name="event-offer-${offersToRender[i].name}" checked="">
-      <label class="event__offer-label" for="event-offer-${offersToRender[i].name}-1">
-        <span class="event__offer-title">${offersToRender[i].name}</span>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${checkedOffers[i].name}-1" type="checkbox" name="event-offer-${checkedOffers[i].name}" checked="">
+      <label class="event__offer-label" for="event-offer-${checkedOffers[i].name}-1">
+        <span class="event__offer-title">${checkedOffers[i].name}</span>
         +€&nbsp;
-        <span class="event__offer-price">${offersToRender[i].price}</span>
+        <span class="event__offer-price">${checkedOffers[i].price}</span>
       </label>
     </div>`);
+    }
+    if (foundType.offers) {
+      for (let i = 0; i < foundType.offers.length; i++) {
+        if (checkedOffers.find((offer) => offer.name === foundType.offers[i].name)) {
+          continue;
+        } else {
+          offersListMarkups.push(`<div class="event__offer-selector">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].name}-1" type="checkbox" name="event-offer-${foundType.offers[i].name}">
+        <label class="event__offer-label" for="event-offer-${foundType.offers[i].name}-1">
+          <span class="event__offer-title">${foundType.offers[i].name}</span>
+          +€&nbsp;
+          <span class="event__offer-price">${foundType.offers[i].price}</span>
+        </label>
+      </div>`);
+        }
+      }
     }
     return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -113,7 +130,7 @@ const createEditorFormTemplate = (point) => {
     </button>
   </header>
   <section class="event__details">
-      ${generateOffersListMarkup(checkedOffers)}
+      ${generateOffersListMarkup(checkedOffers, type)}
      <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -138,6 +155,7 @@ export default class EditorForm extends SmartView {
     this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._priceInputHandler = this._priceInputHandler.bind(this);
+    this._offersCheckboxHandler = this._offersCheckboxHandler.bind(this);
 
     this._setDatepicker();
     this._setInnerHandlers();
@@ -236,6 +254,8 @@ export default class EditorForm extends SmartView {
     this.getElement()
     .querySelector(`.event__input--price`)
     .addEventListener(`input`, this._priceInputHandler);
+    this.getElement()
+    .addEventListener(`change`, this._offersCheckboxHandler);
   }
 
   _eventTypeToggleHandler(evt) {
@@ -258,6 +278,8 @@ export default class EditorForm extends SmartView {
         destinationInfo: foundDestination.destinationInfo,
         photo: foundDestination.destinationPhoto
       });
+    } else {
+      evt.target.setCustomValidity(`Выберите из списка возможных городов`);
     }
   }
 
@@ -266,6 +288,26 @@ export default class EditorForm extends SmartView {
     this.updateData({
       price: evt.target.value
     });
+  }
+
+  _offersCheckboxHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.parentElement.className === `event__offer-selector`) {
+      const offerElement = evt.target.parentElement;
+      const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
+      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
+      if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
+        this._data.checkedOffers.push(
+            {
+              name: offerName,
+              price: offerPrice
+            }
+        );
+      } else {
+        const offerIndex = this._data.checkedOffers.findIndex((offer) => offer.name === offerName);
+        this._data.checkedOffers.splice(offerIndex, 1);
+      }
+    }
   }
 
   restoreHandlers() {

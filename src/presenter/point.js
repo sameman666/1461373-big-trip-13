@@ -121,7 +121,6 @@ export default class PointPresenter {
         UpdateType.MINOR,
         update
     );
-    // this._replaceEditorToRoutePoint();
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
