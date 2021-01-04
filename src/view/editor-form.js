@@ -37,18 +37,35 @@ export const generateCityListMarkup = (createdCityList) => {
   return cityListMarkups.join(``);
 };
 
-export const generateOffersListMarkup = (offersToRender) => {
+export const generateOffersListMarkup = (checkedOffers, currentType) => {
+  const foundType = types.find((type) => type.name === currentType);
   const offersListMarkups = [];
-  if (offersToRender.length) {
-    for (let i = 0; i < offersToRender.length; i++) {
+  if (checkedOffers.length) {
+    for (let i = 0; i < checkedOffers.length; i++) {
       offersListMarkups.push(`<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offersToRender[i].name}-1" type="checkbox" name="event-offer-${offersToRender[i].name}" checked="">
-      <label class="event__offer-label" for="event-offer-${offersToRender[i].name}-1">
-        <span class="event__offer-title">${offersToRender[i].name}</span>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${checkedOffers[i].name}-1" type="checkbox" name="event-offer-${checkedOffers[i].name}" checked="">
+      <label class="event__offer-label" for="event-offer-${checkedOffers[i].name}-1">
+        <span class="event__offer-title">${checkedOffers[i].name}</span>
         +€&nbsp;
-        <span class="event__offer-price">${offersToRender[i].price}</span>
+        <span class="event__offer-price">${checkedOffers[i].price}</span>
       </label>
     </div>`);
+    }
+    if (foundType.offers) {
+      for (let i = 0; i < foundType.offers.length; i++) {
+        if (checkedOffers.find((offer) => offer.name === foundType.offers[i].name)) {
+          continue;
+        } else {
+          offersListMarkups.push(`<div class="event__offer-selector">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].name}-1" type="checkbox" name="event-offer-${foundType.offers[i].name}">
+        <label class="event__offer-label" for="event-offer-${foundType.offers[i].name}-1">
+          <span class="event__offer-title">${foundType.offers[i].name}</span>
+          +€&nbsp;
+          <span class="event__offer-price">${foundType.offers[i].price}</span>
+        </label>
+      </div>`);
+        }
+      }
     }
     return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -57,7 +74,7 @@ export const generateOffersListMarkup = (offersToRender) => {
     </div>
   </section>`;
   }
-  return offersListMarkups;
+  return ``;
 };
 
 const createEditorFormTemplate = (point) => {
@@ -103,7 +120,7 @@ const createEditorFormTemplate = (point) => {
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -113,7 +130,7 @@ const createEditorFormTemplate = (point) => {
     </button>
   </header>
   <section class="event__details">
-      ${generateOffersListMarkup(checkedOffers)}
+      ${generateOffersListMarkup(checkedOffers, type)}
      <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -131,15 +148,29 @@ export default class EditorForm extends SmartView {
     this._endDatepicker = null;
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
     this._eventTypeToggleHandler = this._eventTypeToggleHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
+    this._priceInputHandler = this._priceInputHandler.bind(this);
+    this._offersCheckboxHandler = this._offersCheckboxHandler.bind(this);
 
     this._setDatepicker();
     this._setInnerHandlers();
 
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._startDatepicker || this._endDatepicker) {
+      this._startDatepicker.destroy();
+      this._endDatepicker.destroy();
+      this._startDatepicker = null;
+      this._endDatepicker = null;
+    }
   }
 
   reset(point) {
@@ -220,6 +251,11 @@ export default class EditorForm extends SmartView {
     this.getElement()
     .querySelector(`.event__input--destination`)
     .addEventListener(`input`, this._destinationInputHandler);
+    this.getElement()
+    .querySelector(`.event__input--price`)
+    .addEventListener(`input`, this._priceInputHandler);
+    this.getElement()
+    .addEventListener(`change`, this._offersCheckboxHandler);
   }
 
   _eventTypeToggleHandler(evt) {
@@ -227,7 +263,7 @@ export default class EditorForm extends SmartView {
     this.updateData({
       type: evt.target.textContent
     });
-    let foundType = types.find((type) => type.name === this._data.type);
+    const foundType = types.find((type) => type.name === this._data.type);
     this.updateData({
       checkedOffers: foundType.offers ? foundType.offers : ``
     });
@@ -235,13 +271,42 @@ export default class EditorForm extends SmartView {
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
-    let foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
+    const foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
     if (foundDestination) {
       this.updateData({
         destination: foundDestination.destination,
         destinationInfo: foundDestination.destinationInfo,
         photo: foundDestination.destinationPhoto
       });
+    } else {
+      evt.target.setCustomValidity(`Выберите из списка возможных городов`);
+    }
+  }
+
+  _priceInputHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      price: evt.target.value
+    });
+  }
+
+  _offersCheckboxHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.parentElement.className === `event__offer-selector`) {
+      const offerElement = evt.target.parentElement;
+      const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
+      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
+      if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
+        this._data.checkedOffers.push(
+            {
+              name: offerName,
+              price: offerPrice
+            }
+        );
+      } else {
+        const offerIndex = this._data.checkedOffers.findIndex((offer) => offer.name === offerName);
+        this._data.checkedOffers.splice(offerIndex, 1);
+      }
     }
   }
 
@@ -249,6 +314,7 @@ export default class EditorForm extends SmartView {
     this._setDatepicker();
     this._setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
     this.setEditClickHandler(this._callback.click);
   }
 
@@ -260,5 +326,15 @@ export default class EditorForm extends SmartView {
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(this._data);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 }

@@ -6,7 +6,7 @@ export const Place = {
   BEFORE_END: `beforeend`,
 };
 
-export const renderElement = (container, element, place) => {
+export const render = (container, element, place) => {
 
   if (container instanceof AbstractView) {
     container = container.getElement();

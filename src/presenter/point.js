@@ -1,6 +1,7 @@
 import RoutePointView from "../view/route-point.js";
 import EditorFormView from "../view/editor-form.js";
-import {renderElement, Place, replace, remove} from "../utils/render.js";
+import {render, Place, replace, remove} from "../utils/render.js";
+import {UserAction, UpdateType} from "../const.js";
 
 const Mode = {
   DEFAULT: `DEFAULT`,
@@ -21,6 +22,7 @@ export default class PointPresenter {
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleClick = this._handleClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
@@ -36,10 +38,11 @@ export default class PointPresenter {
     this._routePointComponent.setClickHandler(this._handleClick);
     this._routePointEditComponent.setEditClickHandler(this._handleEditClick);
     this._routePointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._routePointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
     this._routePointEditComponent.setFormSubmitHandler(this._handleFormSubmit);
 
     if (prevRoutePointComponent === null || prevRoutePointEditComponent === null) {
-      renderElement(this._container, this._routePointComponent, Place.BEFORE_END);
+      render(this._container, this._routePointComponent, Place.BEFORE_END);
       return;
     }
 
@@ -100,6 +103,8 @@ export default class PointPresenter {
 
   _handleFavoriteClick() {
     this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
         Object.assign(
             {},
             this._point,
@@ -110,9 +115,20 @@ export default class PointPresenter {
     );
   }
 
-  _handleFormSubmit(point) {
-    this._changeData(point);
-    this._replaceEditorToRoutePoint();
+  _handleFormSubmit(update) {
+    this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
+        update
+    );
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
+  }
+
+  _handleDeleteClick(point) {
+    this._changeData(
+        UserAction.DELETE_POINT,
+        UpdateType.MINOR,
+        point
+    );
   }
 }
