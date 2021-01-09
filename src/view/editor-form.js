@@ -40,41 +40,31 @@ export const generateCityListMarkup = (createdCityList) => {
 export const generateOffersListMarkup = (checkedOffers, currentType) => {
   const foundType = types.find((type) => type.name === currentType);
   const offersListMarkups = [];
-  if (checkedOffers.length) {
-    for (let i = 0; i < checkedOffers.length; i++) {
+  let isChecked;
+  if (foundType.offers) {
+    for (let i = 0; i < foundType.offers.length; i++) {
+      isChecked = false;
+      if (checkedOffers.find((offer) => offer.name === foundType.offers[i].name)) {
+        isChecked = true;
+      }
       offersListMarkups.push(`<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${checkedOffers[i].name}-1" type="checkbox" name="event-offer-${checkedOffers[i].name}" checked="">
-      <label class="event__offer-label" for="event-offer-${checkedOffers[i].name}-1">
-        <span class="event__offer-title">${checkedOffers[i].name}</span>
-        +€&nbsp;
-        <span class="event__offer-price">${checkedOffers[i].price}</span>
-      </label>
-    </div>`);
-    }
-    if (foundType.offers) {
-      for (let i = 0; i < foundType.offers.length; i++) {
-        if (checkedOffers.find((offer) => offer.name === foundType.offers[i].name)) {
-          continue;
-        } else {
-          offersListMarkups.push(`<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].name}-1" type="checkbox" name="event-offer-${foundType.offers[i].name}">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].name}-1" type="checkbox" name="event-offer-${foundType.offers[i].name}" ${isChecked ? `checked=""` : ``}>
         <label class="event__offer-label" for="event-offer-${foundType.offers[i].name}-1">
           <span class="event__offer-title">${foundType.offers[i].name}</span>
           +€&nbsp;
           <span class="event__offer-price">${foundType.offers[i].price}</span>
         </label>
       </div>`);
-        }
-      }
     }
     return `<section class="event__section  event__section--offers">
-    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-    <div class="event__available-offers">
-      ${offersListMarkups.join(``)}
-    </div>
-  </section>`;
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+      <div class="event__available-offers">
+        ${offersListMarkups.join(``)}
+      </div>
+    </section>`;
+  } else {
+    return ``;
   }
-  return ``;
 };
 
 const createEditorFormTemplate = (point) => {

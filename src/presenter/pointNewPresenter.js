@@ -2,10 +2,10 @@ import CreateFormView from "../view/create-form.js";
 import {generateId} from "../mock/point.js";
 import {remove, render, Place} from "../utils/render.js";
 import {UserAction, UpdateType} from "../const.js";
-import {newEventButton} from "../main.js";
 
 export default class PointNew {
-  constructor(pointListContainer, changeData) {
+  constructor(pointListContainer, changeData, newEventButton) {
+    this._newEventButton = newEventButton;
     this._pointListContainer = pointListContainer;
     this._changeData = changeData;
 
@@ -39,6 +39,7 @@ export default class PointNew {
     this._pointCreateComponent = null;
 
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
+    this._newEventButton.disabled = false;
   }
 
   _handleFormSubmit(point) {
@@ -48,19 +49,19 @@ export default class PointNew {
         Object.assign(point, {id: generateId()})
     );
     this.destroy();
-    newEventButton.disabled = false;
+    this._newEventButton.disabled = false;
   }
 
   _handleCancelClick() {
     this.destroy();
-    newEventButton.disabled = false;
+    this._newEventButton.disabled = false;
   }
 
   _escKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
       this.destroy();
-      newEventButton.disabled = false;
+      this._newEventButton.disabled = false;
     }
   }
 }

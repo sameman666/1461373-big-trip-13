@@ -10,10 +10,12 @@ import PointPresenter from "../presenter/point.js";
 import PointNewPresenter from "../presenter/pointNewPresenter.js";
 import {filter} from "../utils/filters.js";
 import {sortByPrice, sortByTime, sortByDay} from "../utils/point.js";
-import {SortType, UserAction, UpdateType, FilterType} from "../const.js";
+import {SortType, UserAction, UpdateType, MenuItem} from "../const.js";
+import StatisticsView from "../view/statistics.js";
 
 export default class TripPresenter {
-  constructor(container, points, pointsModel, filterModel) {
+  constructor(container, points, pointsModel, filterModel, newEventButton) {
+    this._newEventButton = newEventButton;
     this._pointsModel = pointsModel;
     this._filterModel = filterModel;
     this._amountToRender = points.length;
@@ -28,22 +30,22 @@ export default class TripPresenter {
     this._filters = new FiltersView();
     this._eventsList = new EventsListView();
     this._noPoints = new NoPoints();
-    this._routeInfoAndPrice = new RouteInfoAndPriceView();
+    this._routeInfoAndPrice = null;
+    this._statistics = new StatisticsView(this._pointsModel.getPoints());
 
     this._header = container.querySelector(`.page-header`);
     this._tripMain = this._header.querySelector(`.trip-main`);
     this._tripMainControls = this._header.querySelector(`.trip-main__trip-controls`);
     this._main = container.querySelector(`main`);
+    this._pageBodyContainer = this._main.querySelector(`.page-body__container`);
     this._tripEvents = this._main.querySelector(`.trip-events`);
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
+    this._handleSiteMenuClick = this._handleSiteMenuClick.bind(this);
 
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
-
-    this._pointsModel.addObserver(this._handleModelEvent);
-    this._filterModel.addObserver(this._handleModelEvent);
   }
 
   init() {
@@ -51,11 +53,56 @@ export default class TripPresenter {
     this._renderEventsList();
     this._createPointNewPresenter();
     this._renderPoints();
+    this._renderStatistics();
     this._renderRouteInfoAndPrice();
+
+    this._pointsModel.addObserver(this._handleModelEvent);
+    this._filterModel.addObserver(this._handleModelEvent);
+  }
+
+  destroy() {
+    this._clearTrip({resetSortType: true});
+
+    remove(this._eventsList);
+    remove(this._sorting);
+
+    this._pointsModel.removeObserver(this._handleModelEvent);
+    this._filterModel.removeObserver(this._handleModelEvent);
   }
 
   _renderMenu() {
-    render(this._tripMainControls, new SiteMenuView(), Place.AFTER_BEGIN);
+    render(this._tripMainControls, this._siteMenu, Place.AFTER_BEGIN);
+    this._siteMenu.setMenuClickHandler(this._handleSiteMenuClick);
+  }
+
+  _renderStatistics() {
+    render(this._pageBodyContainer, this._statistics, Place.BEFORE_END);
+    this._statistics.hide();
+  }
+
+  hide() {
+    this._tripEvents.classList.add(`trip-events--hidden`);
+  }
+
+  show() {
+    this._tripEvents.classList.remove(`trip-events--hidden`);
+  }
+
+  _handleSiteMenuClick(menuItem) {
+    switch (menuItem) {
+      case MenuItem.TABLE:
+        this.destroy();
+        this.init();
+        this.show();
+        this._statistics.hide();
+        break;
+      case MenuItem.STATS:
+        this.destroy();
+        this.init();
+        this.hide();
+        this._statistics.show();
+        break;
+    }
   }
 
   _renderSorting() {
@@ -70,12 +117,12 @@ export default class TripPresenter {
   }
 
   _renderEventsList() {
-    render(this._tripEvents, new EventsListView(), Place.BEFORE_END);
+    render(this._tripEvents, this._eventsList, Place.BEFORE_END);
     this._tripEventsList = this._tripEvents.querySelector(`.trip-events__list`);
   }
 
   _createPointNewPresenter() {
-    this._pointNewPresenter = new PointNewPresenter(this._tripEventsList, this._handleViewAction);
+    this._pointNewPresenter = new PointNewPresenter(this._tripEventsList, this._handleViewAction, this._newEventButton);
   }
 
   _renderPoints() {
@@ -95,16 +142,18 @@ export default class TripPresenter {
   }
 
   _renderRouteInfoAndPrice() {
+    if (this._routeInfoAndPrice !== null) {
+      return;
+    }
     if (this._points.length) {
       const createdRoute = createRoute(this._points);
-      render(this._tripMain, new RouteInfoAndPriceView(createdRoute), Place.AFTER_BEGIN);
+      this._routeInfoAndPrice = new RouteInfoAndPriceView(createdRoute);
+      render(this._tripMain, this._routeInfoAndPrice, Place.AFTER_BEGIN);
     }
   }
 
   createPoint() {
     const defaultData = this._getPoints()[0];
-    this._currentSortType = SortType.DEFAULT;
-    this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this._pointNewPresenter.init(Object.assign({}, defaultData));
   }
 
@@ -155,6 +204,7 @@ export default class TripPresenter {
       this._currentSortType = SortType.DEFAULT;
     }
   }
+
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
