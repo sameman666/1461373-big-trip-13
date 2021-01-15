@@ -1,10 +1,9 @@
-import {generatePhotosMarkup, generateEventListMarkup, generateCityListMarkup, generateOffersListMarkup} from "../view/editor-form.js";
-import {createCityList, createEventList, types, DESTINATIONS} from "../mock/point.js";
+import {generatePhotosMarkup, generateEventListMarkup, generateCityListMarkup, generateOffersListMarkup, createCityList, createEventList} from "../view/editor-form.js";
 import SmartView from "./smart.js";
 import flatpickr from "flatpickr";
 import dayjs from "dayjs";
 
-const createNewEventFormTemplate = (point) => {
+const createNewEventFormTemplate = (point, offers, destinations) => {
   const {type, eventDate, eventDuration, price, checkedOffers, destination, destinationInfo, photo} = point;
 
   return `<form class="event event--edit" action="#" method="post">
@@ -19,7 +18,7 @@ const createNewEventFormTemplate = (point) => {
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${generateEventListMarkup(createEventList())}
+          ${generateEventListMarkup(createEventList(offers))}
         </fieldset>
       </div>
     </div>
@@ -30,7 +29,7 @@ const createNewEventFormTemplate = (point) => {
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
       <datalist id="destination-list-1">
-        ${generateCityListMarkup(createCityList())}
+        ${generateCityListMarkup(createCityList(destinations))}
       </datalist>
     </div>
 
@@ -54,7 +53,7 @@ const createNewEventFormTemplate = (point) => {
     <button class="event__reset-btn" type="reset">Cancel</button>
   </header>
   <section class="event__details">
-    ${generateOffersListMarkup(checkedOffers, type)}
+    ${generateOffersListMarkup(checkedOffers, type, offers)}
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -65,9 +64,11 @@ const createNewEventFormTemplate = (point) => {
 };
 
 export default class CreateForm extends SmartView {
-  constructor(point) {
+  constructor(point, offers, destinations) {
     super();
     this._data = point;
+    this._offers = offers;
+    this._destinations = destinations;
     this._startDatepicker = null;
     this._endDatepicker = null;
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
@@ -102,7 +103,7 @@ export default class CreateForm extends SmartView {
   }
 
   getTemplate() {
-    return createNewEventFormTemplate(this._data);
+    return createNewEventFormTemplate(this._data, this._offers, this._destinations);
   }
 
   _setDatepicker() {
@@ -173,23 +174,31 @@ export default class CreateForm extends SmartView {
 
   _eventTypeToggleHandler(evt) {
     evt.preventDefault();
-    this.updateData({
-      type: evt.target.textContent
-    });
-    const foundType = types.find((type) => type.name === this._data.type);
-    this.updateData({
-      checkedOffers: foundType.offers ? foundType.offers : ``
-    });
+    if (evt.target.tagName === `LABEL`) {
+      this.updateData({
+        type: evt.target.textContent
+      });
+      const foundType = this._offers.find((offer) => offer.type.toLowerCase() === this._data.type.toLowerCase());
+      this.updateData({
+        checkedOffers: foundType.offers.length ?
+          foundType.offers.map((offer) => {
+            return {
+              name: offer.title,
+              price: offer.price
+            };
+          }) : []
+      });
+    }
   }
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
-    const foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
+    const foundDestination = this._destinations.find((destination) => destination.name === evt.target.value);
     if (foundDestination) {
       this.updateData({
-        destination: foundDestination.destination,
-        destinationInfo: foundDestination.destinationInfo,
-        photo: foundDestination.destinationPhoto
+        destination: foundDestination.name,
+        destinationInfo: foundDestination.description,
+        photo: foundDestination.pictures
       });
     } else {
       evt.target.setCustomValidity(`Выберите из списка возможных городов`);

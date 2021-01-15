@@ -1,5 +1,5 @@
 import CreateFormView from "../view/create-form.js";
-import {generateId} from "../mock/point.js";
+import {generateId} from "../utils/point.js";
 import {remove, render, Place} from "../utils/render.js";
 import {UserAction, UpdateType} from "../const.js";
 
@@ -16,12 +16,12 @@ export default class PointNew {
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init(point) {
+  init(point, offers, destinations) {
     if (this._pointCreateComponent !== null) {
       return;
     }
 
-    this._pointCreateComponent = new CreateFormView(point);
+    this._pointCreateComponent = new CreateFormView(point, offers, destinations);
     this._pointCreateComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._pointCreateComponent.setCancelClickHandler(this._handleCancelClick);
 

@@ -26,14 +26,16 @@ export default class PointPresenter {
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init(point) {
+  init(point, offers, destinations) {
     this._point = point;
+    this._offers = offers;
+    this._destinations = destinations;
 
     const prevRoutePointComponent = this._routePointComponent;
     const prevRoutePointEditComponent = this._routePointEditComponent;
 
     this._routePointComponent = new RoutePointView(point);
-    this._routePointEditComponent = new EditorFormView(point);
+    this._routePointEditComponent = new EditorFormView(point, offers, destinations);
 
     this._routePointComponent.setClickHandler(this._handleClick);
     this._routePointEditComponent.setEditClickHandler(this._handleEditClick);
