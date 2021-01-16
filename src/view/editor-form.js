@@ -1,4 +1,3 @@
-import {createCityList, createEventList, types, DESTINATIONS} from "../mock/point.js";
 import SmartView from "./smart.js";
 import flatpickr from "flatpickr";
 import dayjs from "dayjs";
@@ -9,7 +8,7 @@ import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 export const generatePhotosMarkup = (photos) => {
   const photosMarkups = [];
   for (let i = 0; i < photos.length; i++) {
-    photosMarkups.push(`<img class="event__photo" src="${photos[i]}" alt="Event photo">`);
+    photosMarkups.push(`<img class="event__photo" src="${photos[i].src}" alt="${photos[i].description}">`);
   }
   return `<div class="event__photos-container">
   <div class="event__photos-tape">
@@ -37,20 +36,34 @@ export const generateCityListMarkup = (createdCityList) => {
   return cityListMarkups.join(``);
 };
 
-export const generateOffersListMarkup = (checkedOffers, currentType) => {
-  const foundType = types.find((type) => type.name === currentType);
+export const createEventList = (offers) => {
+  const eventList = offers.map((element) => {
+    return element.type;
+  });
+  return eventList;
+};
+
+export const createCityList = (destinations) => {
+  const cityList = destinations.map((element) => {
+    return element.name;
+  });
+  return cityList;
+};
+
+export const generateOffersListMarkup = (checkedOffers, currentType, offers) => {
+  const foundType = offers.find((offer) => offer.type.toLowerCase() === currentType.toLowerCase());
   const offersListMarkups = [];
   let isChecked;
-  if (foundType.offers) {
+  if (foundType.offers.length) {
     for (let i = 0; i < foundType.offers.length; i++) {
       isChecked = false;
-      if (checkedOffers.find((offer) => offer.name === foundType.offers[i].name)) {
+      if (checkedOffers.find((offer) => offer.name === foundType.offers[i].title)) {
         isChecked = true;
       }
       offersListMarkups.push(`<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].name}-1" type="checkbox" name="event-offer-${foundType.offers[i].name}" ${isChecked ? `checked=""` : ``}>
-        <label class="event__offer-label" for="event-offer-${foundType.offers[i].name}-1">
-          <span class="event__offer-title">${foundType.offers[i].name}</span>
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].title}-1" type="checkbox" name="event-offer-${foundType.offers[i].title}" ${isChecked ? `checked=""` : ``}>
+        <label class="event__offer-label" for="event-offer-${foundType.offers[i].title}-1">
+          <span class="event__offer-title">${foundType.offers[i].title}</span>
           +€&nbsp;
           <span class="event__offer-price">${foundType.offers[i].price}</span>
         </label>
@@ -67,9 +80,8 @@ export const generateOffersListMarkup = (checkedOffers, currentType) => {
   }
 };
 
-const createEditorFormTemplate = (point) => {
+const createEditorFormTemplate = (point, offers, destinations) => {
   const {type, eventDate, endEventDate, price, checkedOffers, destination, destinationInfo, photo} = point;
-
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
     <div class="event__type-wrapper">
@@ -82,7 +94,7 @@ const createEditorFormTemplate = (point) => {
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${generateEventListMarkup(createEventList())}
+          ${generateEventListMarkup(createEventList(offers))}
         </fieldset>
       </div>
     </div>
@@ -93,7 +105,7 @@ const createEditorFormTemplate = (point) => {
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
       <datalist id="destination-list-1">
-        ${generateCityListMarkup(createCityList())}
+        ${generateCityListMarkup(createCityList(destinations))}
       </datalist>
     </div>
 
@@ -120,7 +132,7 @@ const createEditorFormTemplate = (point) => {
     </button>
   </header>
   <section class="event__details">
-      ${generateOffersListMarkup(checkedOffers, type)}
+      ${generateOffersListMarkup(checkedOffers, type, offers)}
      <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -131,9 +143,11 @@ const createEditorFormTemplate = (point) => {
 };
 
 export default class EditorForm extends SmartView {
-  constructor(point) {
+  constructor(point, offers, destinations) {
     super();
     this._data = point;
+    this._offers = offers;
+    this._destinations = destinations;
     this._startDatepicker = null;
     this._endDatepicker = null;
     this._clickHandler = this._clickHandler.bind(this);
@@ -170,7 +184,7 @@ export default class EditorForm extends SmartView {
   }
 
   getTemplate() {
-    return createEditorFormTemplate(this._data);
+    return createEditorFormTemplate(this._data, this._offers, this._destinations);
   }
 
   _clickHandler() {
@@ -250,23 +264,30 @@ export default class EditorForm extends SmartView {
 
   _eventTypeToggleHandler(evt) {
     evt.preventDefault();
-    this.updateData({
-      type: evt.target.textContent
-    });
-    const foundType = types.find((type) => type.name === this._data.type);
-    this.updateData({
-      checkedOffers: foundType.offers ? foundType.offers : ``
-    });
+    if (evt.target.tagName === `LABEL`) {
+      this.updateData({
+        type: evt.target.textContent
+      });
+      const foundType = this._offers.find((offer) => offer.type.toLowerCase() === this._data.type.toLowerCase());
+      this.updateData({
+        checkedOffers: foundType.offers.length ? foundType.offers.map((offer) => {
+          return {
+            name: offer.title,
+            price: offer.price
+          };
+        }) : []
+      });
+    }
   }
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
-    const foundDestination = DESTINATIONS.find((destination) => destination.destination === evt.target.value);
+    const foundDestination = this._destinations.find((destination) => destination.name === evt.target.value);
     if (foundDestination) {
       this.updateData({
-        destination: foundDestination.destination,
-        destinationInfo: foundDestination.destinationInfo,
-        photo: foundDestination.destinationPhoto
+        destination: foundDestination.name,
+        destinationInfo: foundDestination.description,
+        photo: foundDestination.pictures
       });
     } else {
       evt.target.setCustomValidity(`Выберите из списка возможных городов`);
@@ -285,7 +306,7 @@ export default class EditorForm extends SmartView {
     if (evt.target.parentElement.className === `event__offer-selector`) {
       const offerElement = evt.target.parentElement;
       const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
-      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
+      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent * 1;
       if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
         this._data.checkedOffers.push(
             {
