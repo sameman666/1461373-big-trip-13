@@ -7,9 +7,9 @@ import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 export const generatePhotosMarkup = (photos) => {
   const photosMarkups = [];
-  for (let i = 0; i < photos.length; i++) {
-    photosMarkups.push(`<img class="event__photo" src="${photos[i].src}" alt="${photos[i].description}">`);
-  }
+  photos.map((photo) => {
+    photosMarkups.push(`<img class="event__photo" src="${photo.src}" alt="${photo.description}">`);
+  });
   return `<div class="event__photos-container">
   <div class="event__photos-tape">
     ${photosMarkups.join(``)}
@@ -17,11 +17,11 @@ export const generatePhotosMarkup = (photos) => {
 </div>`;
 };
 
-export const generateEventListMarkup = (createdEventList) => {
+export const generateEventListMarkup = (createdEventList, isDisabled) => {
   const eventListMarkups = [];
   for (let i = 0; i < createdEventList.length; i++) {
     eventListMarkups.push(`<div class="event__type-item">
-      <input id="event-type-${createdEventList[i].toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${createdEventList[i].toLowerCase()}">
+      <input id="event-type-${createdEventList[i].toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${createdEventList[i].toLowerCase()} ${isDisabled ? `disabled` : ``}">
       <label class="event__type-label  event__type-label--${createdEventList[i].toLowerCase()}" for="event-type-${createdEventList[i].toLowerCase()}-1">${createdEventList[i]}</label>
     </div>`);
   }
@@ -50,25 +50,25 @@ export const createCityList = (destinations) => {
   return cityList;
 };
 
-export const generateOffersListMarkup = (checkedOffers, currentType, offers) => {
+export const generateOffersListMarkup = (checkedOffers, currentType, offers, isDisabled) => {
   const foundType = offers.find((offer) => offer.type.toLowerCase() === currentType.toLowerCase());
   const offersListMarkups = [];
   let isChecked;
   if (foundType.offers.length) {
-    for (let i = 0; i < foundType.offers.length; i++) {
+    foundType.offers.map((foundTypeOffer) => {
       isChecked = false;
-      if (checkedOffers.find((offer) => offer.name === foundType.offers[i].title)) {
+      if (checkedOffers.find((offer) => offer.name === foundTypeOffer.title)) {
         isChecked = true;
       }
       offersListMarkups.push(`<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundType.offers[i].title}-1" type="checkbox" name="event-offer-${foundType.offers[i].title}" ${isChecked ? `checked=""` : ``}>
-        <label class="event__offer-label" for="event-offer-${foundType.offers[i].title}-1">
-          <span class="event__offer-title">${foundType.offers[i].title}</span>
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundTypeOffer.title}-1" type="checkbox" name="event-offer-${foundTypeOffer.title}" ${isChecked ? `checked=""` : ``} ${isDisabled ? `disabled` : ``}>
+        <label class="event__offer-label" for="event-offer-${foundTypeOffer.title}-1">
+          <span class="event__offer-title">${foundTypeOffer.title}</span>
           +€&nbsp;
-          <span class="event__offer-price">${foundType.offers[i].price}</span>
+          <span class="event__offer-price">${foundTypeOffer.price}</span>
         </label>
       </div>`);
-    }
+    });
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
       <div class="event__available-offers">
@@ -81,7 +81,7 @@ export const generateOffersListMarkup = (checkedOffers, currentType, offers) => 
 };
 
 const createEditorFormTemplate = (point, offers, destinations) => {
-  const {type, eventDate, endEventDate, price, checkedOffers, destination, destinationInfo, photo} = point;
+  const {type, eventDate, endEventDate, price, checkedOffers, destination, destinationInfo, photo, isDisabled, isSaving, isDeleting} = point;
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
     <div class="event__type-wrapper">
@@ -89,12 +89,12 @@ const createEditorFormTemplate = (point, offers, destinations) => {
         <span class="visually-hidden">Choose event type</span>
         <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
       </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? `disabled` : ``}>
 
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${generateEventListMarkup(createEventList(offers))}
+          ${generateEventListMarkup(createEventList(offers), isDisabled)}
         </fieldset>
       </div>
     </div>
@@ -103,7 +103,7 @@ const createEditorFormTemplate = (point, offers, destinations) => {
       <label class="event__label  event__type-output" for="event-destination-1">
         ${type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1" ${isDisabled ? `disabled` : ``}>
       <datalist id="destination-list-1">
         ${generateCityListMarkup(createCityList(destinations))}
       </datalist>
@@ -111,10 +111,10 @@ const createEditorFormTemplate = (point, offers, destinations) => {
 
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
-      <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventDate.format(`DD/MM/YY HH:mm`)}">
+      <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventDate.format(`DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
       —
       <label class="visually-hidden" for="event-end-time-1">To</label>
-      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endEventDate.format(`DD/MM/YY HH:mm`)}">
+      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endEventDate.format(`DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
     </div>
 
     <div class="event__field-group  event__field-group--price">
@@ -122,17 +122,17 @@ const createEditorFormTemplate = (point, offers, destinations) => {
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}" ${isDisabled ? `disabled` : ``}>
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Delete</button>
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? `disabled` : ``}>${isSaving ? `Saving...` : `Save`}</button>
+    <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>${isDeleting ? `Deleting...` : `Delete`}</button>
     <button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
     </button>
   </header>
   <section class="event__details">
-      ${generateOffersListMarkup(checkedOffers, type, offers)}
+      ${generateOffersListMarkup(checkedOffers, type, offers, isDisabled)}
      <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -145,7 +145,7 @@ const createEditorFormTemplate = (point, offers, destinations) => {
 export default class EditorForm extends SmartView {
   constructor(point, offers, destinations) {
     super();
-    this._data = point;
+    this._data = EditorForm.parsePointToData(point);
     this._offers = offers;
     this._destinations = destinations;
     this._startDatepicker = null;
@@ -179,7 +179,7 @@ export default class EditorForm extends SmartView {
 
   reset(point) {
     this.updateData(
-        point
+        EditorForm.parsePointToData(point)
     );
   }
 
@@ -306,12 +306,12 @@ export default class EditorForm extends SmartView {
     if (evt.target.parentElement.className === `event__offer-selector`) {
       const offerElement = evt.target.parentElement;
       const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
-      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent * 1;
+      const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
       if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
         this._data.checkedOffers.push(
             {
               name: offerName,
-              price: offerPrice
+              price: typeof offerPrice === `number` ? offerPrice : Number(offerPrice)
             }
         );
       } else {
@@ -331,7 +331,7 @@ export default class EditorForm extends SmartView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._data);
+    this._callback.formSubmit(EditorForm.parseDataToPoint(this._data));
   }
 
   setFormSubmitHandler(callback) {
@@ -341,11 +341,33 @@ export default class EditorForm extends SmartView {
 
   _formDeleteClickHandler(evt) {
     evt.preventDefault();
-    this._callback.deleteClick(this._data);
+    this._callback.deleteClick(EditorForm.parseDataToPoint(this._data));
   }
 
   setDeleteClickHandler(callback) {
     this._callback.deleteClick = callback;
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
+  }
+
+  static parsePointToData(point) {
+    return Object.assign(
+        {},
+        point,
+        {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false
+        }
+    );
+  }
+
+  static parseDataToPoint(data) {
+    data = Object.assign({}, data);
+
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
+
+    return data;
   }
 }

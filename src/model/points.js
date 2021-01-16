@@ -103,8 +103,7 @@ export default class Points extends Observer {
           }),
         }
     );
-
-    adaptedPoint.checkedOffers.map((checkedOffer) => {
+    adaptedPoint.checkedOffers.forEach((checkedOffer) => {
       delete checkedOffer.title;
     });
 
@@ -128,7 +127,7 @@ export default class Points extends Observer {
           "date_from": point.eventDate.toISOString(),
           "date_to": point.endEventDate.toISOString(),
           "is_favorite": point.isFavourite,
-          "base_price": point.price * 1,
+          "base_price": Number(point.price),
           "destination": {
             "name": point.destination,
             "description": point.destinationInfo,
@@ -147,7 +146,7 @@ export default class Points extends Observer {
         }
     );
 
-    adaptedPoint.offers.map((offer) => {
+    adaptedPoint.offers.forEach((offer) => {
       delete offer.name;
     });
 
