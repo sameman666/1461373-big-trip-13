@@ -4,7 +4,7 @@ import flatpickr from "flatpickr";
 import dayjs from "dayjs";
 
 const createNewEventFormTemplate = (point, offers, destinations) => {
-  const {type, eventDate, eventDuration, price, checkedOffers, destination, destinationInfo, photo} = point;
+  const {type, eventDate, eventDuration, price, checkedOffers, destination, destinationInfo, photo, isDisabled, isSaving} = point;
 
   return `<form class="event event--edit" action="#" method="post">
   <header class="event__header">
@@ -13,12 +13,12 @@ const createNewEventFormTemplate = (point, offers, destinations) => {
         <span class="visually-hidden">Choose event type</span>
         <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
       </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? `disabled` : ``}>
 
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">Event type</legend>
-          ${generateEventListMarkup(createEventList(offers))}
+          ${generateEventListMarkup(createEventList(offers), isDisabled)}
         </fieldset>
       </div>
     </div>
@@ -27,7 +27,7 @@ const createNewEventFormTemplate = (point, offers, destinations) => {
       <label class="event__label  event__type-output" for="event-destination-1">
         ${type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1" ${isDisabled ? `disabled` : ``}>
       <datalist id="destination-list-1">
         ${generateCityListMarkup(createCityList(destinations))}
       </datalist>
@@ -35,10 +35,10 @@ const createNewEventFormTemplate = (point, offers, destinations) => {
 
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
-      <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventDate.format(`DD/MM/YY HH:mm`)}">
+      <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventDate.format(`DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
       —
       <label class="visually-hidden" for="event-end-time-1">To</label>
-      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${eventDate.add(eventDuration, `m`).format(`DD/MM/YY HH:mm`)}">
+      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${eventDate.add(eventDuration, `m`).format(`DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
     </div>
 
     <div class="event__field-group  event__field-group--price">
@@ -46,14 +46,14 @@ const createNewEventFormTemplate = (point, offers, destinations) => {
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}" ${isDisabled ? `disabled` : ``}>
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Cancel</button>
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? `disabled` : ``}>${isSaving ? `Saving` : `Save`}</button>
+    <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>Cancel</button>
   </header>
   <section class="event__details">
-    ${generateOffersListMarkup(checkedOffers, type, offers)}
+    ${generateOffersListMarkup(checkedOffers, type, offers, isDisabled)}
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo}</p>
@@ -66,7 +66,7 @@ const createNewEventFormTemplate = (point, offers, destinations) => {
 export default class CreateForm extends SmartView {
   constructor(point, offers, destinations) {
     super();
-    this._data = point;
+    this._data = CreateForm.parsePointToData(point);
     this._offers = offers;
     this._destinations = destinations;
     this._startDatepicker = null;
@@ -98,7 +98,7 @@ export default class CreateForm extends SmartView {
 
   reset(point) {
     this.updateData(
-        point
+        CreateForm.parsePointToData(point)
     );
   }
 
@@ -241,7 +241,7 @@ export default class CreateForm extends SmartView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._data);
+    this._callback.formSubmit(CreateForm.parseDataToPoint(this._data));
   }
 
   setFormSubmitHandler(callback) {
@@ -251,11 +251,31 @@ export default class CreateForm extends SmartView {
 
   _formCancelClickHandler(evt) {
     evt.preventDefault();
-    this._callback.cancelClick(this._data);
+    this._callback.cancelClick(CreateForm.parseDataToPoint(this._data));
   }
 
   setCancelClickHandler(callback) {
     this._callback.cancelClick = callback;
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formCancelClickHandler);
+  }
+
+  static parsePointToData(point) {
+    return Object.assign(
+        {},
+        point,
+        {
+          isDisabled: false,
+          isSaving: false,
+        }
+    );
+  }
+
+  static parseDataToPoint(data) {
+    data = Object.assign({}, data);
+
+    delete data.isDisabled;
+    delete data.isSaving;
+
+    return data;
   }
 }

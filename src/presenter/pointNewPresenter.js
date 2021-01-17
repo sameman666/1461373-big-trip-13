@@ -1,5 +1,4 @@
 import CreateFormView from "../view/create-form.js";
-import {generateId} from "../utils/point.js";
 import {remove, render, Place} from "../utils/render.js";
 import {UserAction, UpdateType} from "../const.js";
 
@@ -42,13 +41,31 @@ export default class PointNew {
     this._newEventButton.disabled = false;
   }
 
+  setSaving() {
+    this._pointCreateComponent.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._pointCreateComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    this._pointCreateComponent.shake(resetFormState);
+  }
+
   _handleFormSubmit(point) {
     this._changeData(
         UserAction.ADD_POINT,
         UpdateType.MINOR,
-        Object.assign(point, {id: generateId()})
+        point
     );
-    this.destroy();
     this._newEventButton.disabled = false;
   }
 

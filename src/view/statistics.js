@@ -13,7 +13,7 @@ const countData = (uniqueLabels, points, typeOfChart) => {
       if (currentPoint.type.toUpperCase() === label) {
         switch (typeOfChart) {
           case ChartType.MONEY:
-            return total + currentPoint.price * 1;
+            return total + Number(currentPoint.price);
           case ChartType.TYPE:
             return total + 1;
           case ChartType.TIME:

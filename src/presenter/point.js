@@ -8,6 +8,12 @@ const Mode = {
   EDITING: `EDITING`
 };
 
+export const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`
+};
+
 export default class PointPresenter {
   constructor(container, changeData, changeMode) {
     this._container = container;
@@ -54,6 +60,7 @@ export default class PointPresenter {
 
     if (this._mode === Mode.EDITING) {
       replace(this._routePointEditComponent, prevRoutePointEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevRoutePointComponent);
@@ -68,6 +75,35 @@ export default class PointPresenter {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceEditorToRoutePoint();
+    }
+  }
+
+  setViewState(state) {
+    const resetFormState = () => {
+      this._routePointEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    switch (state) {
+      case State.SAVING:
+        this._routePointEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._routePointEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
+      case State.ABORTING:
+        this._routePointComponent.shake(resetFormState);
+        this._routePointEditComponent.shake(resetFormState);
+        break;
     }
   }
 
