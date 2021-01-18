@@ -6,7 +6,7 @@ import LoadingView from "../view/loading.js";
 import EventsListView from "../view/create-events-list.js";
 import NoPoints from "../view/no-points.js";
 import {render, Place, remove} from "../utils/render.js";
-import {createRoute} from "../mock/route.js";
+import {createRoute} from "../view/route-info.js";
 import PointPresenter, {State as PointPresenterViewState} from "../presenter/point.js";
 import PointNewPresenter from "../presenter/pointNewPresenter.js";
 import {filter} from "../utils/filters.js";

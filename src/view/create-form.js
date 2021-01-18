@@ -219,15 +219,23 @@ export default class CreateForm extends SmartView {
       const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
       const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
       if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
-        this._data.checkedOffers.push(
+        const newCheckedOffers = this._data.checkedOffers.slice();
+        newCheckedOffers.push(
             {
               name: offerName,
-              price: offerPrice
+              price: typeof offerPrice === `number` ? offerPrice : Number(offerPrice)
             }
         );
+        this.updateData({
+          checkedOffers: newCheckedOffers
+        });
       } else {
-        const offerIndex = this._data.checkedOffers.findIndex((offer) => offer.name === offerName);
-        this._data.checkedOffers.splice(offerIndex, 1);
+        const newCheckedOffers = this._data.checkedOffers.slice();
+        const offerIndex = newCheckedOffers.findIndex((offer) => offer.name === offerName);
+        newCheckedOffers.splice(offerIndex, 1);
+        this.updateData({
+          checkedOffers: newCheckedOffers
+        });
       }
     }
   }

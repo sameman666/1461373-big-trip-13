@@ -25,11 +25,11 @@ const createRoutePointTemplate = (point) => {
   const generateOffersListMarkup = (offersToRender) => {
     const offersListMarkups = [];
     if (offersToRender.length) {
-      for (let i = 0; i < offersToRender.length; i++) {
+      for (const offerToRender of offersToRender) {
         offersListMarkups.push(`<li class="event__offer">
-        <span class="event__offer-title">${offersToRender[i].name}</span>
+        <span class="event__offer-title">${offerToRender.name}</span>
         +€&nbsp;
-        <span class="event__offer-price">${offersToRender[i].price}</span>
+        <span class="event__offer-price">${offerToRender.price}</span>
       </li>`);
       }
     }

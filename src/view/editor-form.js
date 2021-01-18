@@ -6,9 +6,8 @@ import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 
 export const generatePhotosMarkup = (photos) => {
-  const photosMarkups = [];
-  photos.map((photo) => {
-    photosMarkups.push(`<img class="event__photo" src="${photo.src}" alt="${photo.description}">`);
+  const photosMarkups = photos.map((photo) => {
+    return `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`;
   });
   return `<div class="event__photos-container">
   <div class="event__photos-tape">
@@ -19,10 +18,10 @@ export const generatePhotosMarkup = (photos) => {
 
 export const generateEventListMarkup = (createdEventList, isDisabled) => {
   const eventListMarkups = [];
-  for (let i = 0; i < createdEventList.length; i++) {
+  for (const eventItem of createdEventList) {
     eventListMarkups.push(`<div class="event__type-item">
-      <input id="event-type-${createdEventList[i].toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${createdEventList[i].toLowerCase()} ${isDisabled ? `disabled` : ``}">
-      <label class="event__type-label  event__type-label--${createdEventList[i].toLowerCase()}" for="event-type-${createdEventList[i].toLowerCase()}-1">${createdEventList[i]}</label>
+      <input id="event-type-${eventItem.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventItem.toLowerCase()} ${isDisabled ? `disabled` : ``}">
+      <label class="event__type-label  event__type-label--${eventItem.toLowerCase()}" for="event-type-${eventItem.toLowerCase()}-1">${eventItem}</label>
     </div>`);
   }
   return eventListMarkups.join(``);
@@ -30,8 +29,8 @@ export const generateEventListMarkup = (createdEventList, isDisabled) => {
 
 export const generateCityListMarkup = (createdCityList) => {
   const cityListMarkups = [];
-  for (let i = 0; i < createdCityList.length; i++) {
-    cityListMarkups.push(`<option value="${createdCityList[i]}"></option>`);
+  for (const city of createdCityList) {
+    cityListMarkups.push(`<option value="${city}"></option>`);
   }
   return cityListMarkups.join(``);
 };
@@ -52,22 +51,21 @@ export const createCityList = (destinations) => {
 
 export const generateOffersListMarkup = (checkedOffers, currentType, offers, isDisabled) => {
   const foundType = offers.find((offer) => offer.type.toLowerCase() === currentType.toLowerCase());
-  const offersListMarkups = [];
   let isChecked;
   if (foundType.offers.length) {
-    foundType.offers.map((foundTypeOffer) => {
+    const offersListMarkups = foundType.offers.map((foundTypeOffer) => {
       isChecked = false;
       if (checkedOffers.find((offer) => offer.name === foundTypeOffer.title)) {
         isChecked = true;
       }
-      offersListMarkups.push(`<div class="event__offer-selector">
+      return `<div class="event__offer-selector">
         <input class="event__offer-checkbox  visually-hidden" id="event-offer-${foundTypeOffer.title}-1" type="checkbox" name="event-offer-${foundTypeOffer.title}" ${isChecked ? `checked=""` : ``} ${isDisabled ? `disabled` : ``}>
         <label class="event__offer-label" for="event-offer-${foundTypeOffer.title}-1">
           <span class="event__offer-title">${foundTypeOffer.title}</span>
           +€&nbsp;
           <span class="event__offer-price">${foundTypeOffer.price}</span>
         </label>
-      </div>`);
+      </div>`;
     });
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -308,15 +306,23 @@ export default class EditorForm extends SmartView {
       const offerName = offerElement.querySelector(`.event__offer-title`).textContent;
       const offerPrice = offerElement.querySelector(`.event__offer-price`).textContent;
       if (!this._data.checkedOffers.find((offer) => offer.name === offerName)) {
-        this._data.checkedOffers.push(
+        const newCheckedOffers = this._data.checkedOffers.slice();
+        newCheckedOffers.push(
             {
               name: offerName,
               price: typeof offerPrice === `number` ? offerPrice : Number(offerPrice)
             }
         );
+        this.updateData({
+          checkedOffers: newCheckedOffers
+        });
       } else {
-        const offerIndex = this._data.checkedOffers.findIndex((offer) => offer.name === offerName);
-        this._data.checkedOffers.splice(offerIndex, 1);
+        const newCheckedOffers = this._data.checkedOffers.slice();
+        const offerIndex = newCheckedOffers.findIndex((offer) => offer.name === offerName);
+        newCheckedOffers.splice(offerIndex, 1);
+        this.updateData({
+          checkedOffers: newCheckedOffers
+        });
       }
     }
   }
