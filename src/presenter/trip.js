@@ -20,6 +20,7 @@ export default class TripPresenter {
     this._pointsModel = pointsModel;
     this._filterModel = filterModel;
     this._amountToRender = pointsModel.getPoints().length;
+    this._defaultPointForCreateForm = pointsModel.getPoints()[0];
     this._container = container;
     this._points = pointsModel.getPoints();
     this._pointPresenter = {};
@@ -146,7 +147,7 @@ export default class TripPresenter {
 
     const points = this._getPoints();
     if (!points.length) {
-      render(this._tripEventsList, new NoPoints(), Place.BEFORE_END);
+      render(this._tripEventsList, this._noPoints, Place.BEFORE_END);
       return;
     }
 
@@ -172,8 +173,7 @@ export default class TripPresenter {
 
   createPoint() {
     this._handleModeChange();
-    const defaultData = this._getPoints().slice();
-    this._pointNewPresenter.init(Object.assign({}, defaultData[0]), this._pointsModel.getOffers(), this._pointsModel.getDestinations());
+    this._pointNewPresenter.init(Object.assign({}, this._defaultPointForCreateForm), this._pointsModel.getOffers(), this._pointsModel.getDestinations());
   }
 
   _getPoints() {

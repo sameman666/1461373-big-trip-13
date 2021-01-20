@@ -231,6 +231,7 @@ export default class EditorForm extends SmartView {
   _startDateChangeHandler(userDate) {
     this.updateData({
       eventDate: dayjs(userDate),
+      endEventDate: dayjs(userDate)
     });
     this.updateData({
       eventDuration: this._data.endEventDate.diff(this._data.eventDate)
